@@ -16,8 +16,6 @@ Color logoBorderColor = BLUE;
 Color logoFillColor = SKYBLUE;
 Color logoTextColor = WHITE;
 const char* introText = "Monke";
-
-Sound introSFX = LoadSound("resources/audio/intro.wav");
 bool introSoundPlayed = false;
 
 // Variable(s) //
@@ -80,6 +78,7 @@ void updateCoreState()
 				case 2:
 					if (Application::enableAudio && !introSoundPlayed)
 					{
+						Sound introSFX = LoadSound("\\resources\\audio\\intro.wav"); // FIX THIS!
 						PlaySound(introSFX);
 						introSoundPlayed = true;
 					}

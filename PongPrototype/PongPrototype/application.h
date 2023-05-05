@@ -28,7 +28,7 @@ public:
 	const char* windowTitle = "Pong Prototype";
 
 	static const bool enableFullScreen = false;
-	static const bool enableAudio = false;
+	static const bool enableAudio = true;
 
 	static const bool canDebug = false;
 
