@@ -1,5 +1,5 @@
 // Header(s) //
-#include "application.h"
+#include "common.h"
 
 // Class(es) //
 Application::Application()
@@ -16,6 +16,12 @@ Application::~Application()
 void Application::Run() 
 {
 	InitWindow(windowWidth, windowHeight, windowTitle);
+
+	if (enableAudio)
+	{
+		InitAudioDevice();
+	}
+	
 	SetTargetFPS(targetFPS);
 
 	if (enableFullScreen)
@@ -36,31 +42,32 @@ void Application::Run()
 
 void Application::Load()
 {
-	// Loadables go here!
+	modifyCoreState(Intro);
 }
 
 void Application::Unload()
 {
-	// Unloadables go here!
+	// Add unloadables here!
 }
 
 void Application::Update(float deltaTime)
 {
-
+	updateCoreState();
+	updateTitleState();
 }
 
 void Application::Draw()
 {
 	BeginDrawing();
-	ClearBackground(BEIGE);
+	ClearBackground(BLACK);
 
 	if (canDebug)
 	{
 		DrawFPS(10, 10);
 	}
 
-	Vector2 textPos = {20, GetScreenHeight() - 40};
-	DrawText("Drawing Test Text", textPos.x, textPos.y, 20, BLUE);
+	drawCoreState();
+	drawTitleState();
 
 	EndDrawing();
 }

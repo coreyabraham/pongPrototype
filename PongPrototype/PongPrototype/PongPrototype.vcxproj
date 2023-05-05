@@ -138,6 +138,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="application.h" />
+    <ClInclude Include="common.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
