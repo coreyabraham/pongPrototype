@@ -1,6 +1,5 @@
 // Header(s) //
 #include "application.h"
-#include "raylib.h"
 
 // Class(es) //
 Application::Application()

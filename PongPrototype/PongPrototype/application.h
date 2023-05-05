@@ -1,5 +1,6 @@
 // Header(s) //
 #pragma once
+#include "raylib.h"
 
 // Class(es) //
 class Application
