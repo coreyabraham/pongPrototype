@@ -16,7 +16,7 @@ Vector2 logoPos = {
 Color logoBorderColor = BLUE;
 Color logoFillColor = SKYBLUE;
 Color logoTextColor = WHITE;
-const char* introText = "mug";
+const char* introText = "Monke";
 bool introSoundPlayed = false;
 
 // Variable(s) //
@@ -35,10 +35,24 @@ int rightSideRecHeight = 16;
 int state = 0;
 float alpha = 1.0f;
 
-ClickButton testButton(Vector2{ 20, 100 }, Vector2{ 80, 40 });
-HoverOutline testBtnOutline {testButton, BLUE};
+// Misc Data //
+ClickButton playBtn = { Vector2{ 20, 100 }, Vector2{ 80, 40 }, "PLAY", BLACK, WHITE };
+HoverOutline playOL = { playBtn };
+
+ClickButton optsBtn = { Vector2{ 20, 180 }, Vector2{ 130, 40 }, "OPTIONS", BLACK, WHITE };
+HoverOutline optsOL = { optsBtn };
+
+ClickButton returnBtn = { Vector2{ 20, Application::windowHeight - 90 }, Vector2{ 130, 40 }, "RETURN", RED, WHITE};
+HoverOutline returnOL = { returnBtn };
+
+Sound click;
 
 // Function(s) //
+void loadLocalData()
+{
+	click = LoadSound("resources\\audio\\click.wav");
+}
+
 void modifyCoreState(Application::CoreState state)
 {
 	currentCoreState = state;
@@ -81,10 +95,8 @@ void updateCoreState()
 				case 2:
 					if (Application::enableAudio && !introSoundPlayed)
 					{
-						std::cout << FileExists("intro.wav") << std::endl;
-
-						Sound introSFX = LoadSound("intro.wav");
-						PlaySound(introSFX);
+						Sound introSfx = LoadSound("resources\\audio\\intro.wav");
+						PlaySound(introSfx);
 						introSoundPlayed = true;
 					}
 
@@ -116,6 +128,7 @@ void updateCoreState()
 							alpha = 0.0f;
 							state = 0;
 
+							modifyCoreState(Application::None);
 							modifyTitleState(Application::Main);
 						}
 					}
@@ -131,7 +144,7 @@ void updateCoreState()
 
 			break;
 		case Application::Game:
-
+			// Add Data Here!
 			break;
 	}
 }
@@ -141,32 +154,52 @@ void updateTitleState()
 	switch (currentTitleState)
 	{
 	case Application::Main:
-		testButton.btnColor = RED;
-		testButton.txtColor = WHITE;
-		testButton.btnText = "PLAY";
+		playBtn.Update();
+		optsBtn.Draw();
 
-		testButton.Update();
-
-		if (testButton.btnAction)
+		if (playBtn.btnAction)
 		{
-			std::cout << "Clicked!" << std::endl;
+			if (Application::enableAudio)
+				PlaySound(click);
+
+			modifyTitleState(Application::Modes);
+		}
+
+		if (optsBtn.btnAction)
+		{
+			if (Application::enableAudio)
+				PlaySound(click);
+
 			modifyTitleState(Application::Options);
-			
 		}
 
-		if (testButton.btnHovering)
+		break;
+
+	case Application::Modes:
+		returnBtn.Update();
+
+		if (returnBtn.btnAction)
 		{
-			std::cout << "Hovering..." << std::endl;
+			modifyTitleState(Application::Main);
 		}
-
 		break;
 
 	case Application::Options:
+		returnBtn.Update();
 
+		if (returnBtn.btnAction)
+		{
+			modifyTitleState(Application::Main);
+		}
 		break;
 
 	case Application::Credits:
+		returnBtn.Update();
 
+		if (returnBtn.btnAction)
+		{
+			modifyTitleState(Application::Main);
+		}
 		break;
 	}
 }
@@ -224,29 +257,68 @@ void drawCoreState()
 void drawTitleState()
 {
 	// Shared //
+	const Vector2 pos = { 40, 20 };
+	const int size = 40;
+	const Color color = WHITE;
+	const char* text = "";
+
+	switch (currentTitleState)
+	{
+		case Application::Main:
+			text = "Pong Prototype | Main Menu";
+			break;
+
+		case Application::Modes:
+			text = "Pong Prototype | Gamemodes";
+			break;
+
+		case Application::Options:
+			text = "Pong Prototype | Options";
+			break;
+
+		case Application::Credits:
+			text = "Pong Prototype | Credits";
+			break;
+	}
+
 	DrawText("Build 0.2.1", 10, GetScreenHeight() - 30, 10, WHITE);
+	DrawText(text, pos.x, pos.y, size, color);
 
 	// State-Specific //
 	switch (currentTitleState)
 	{
 	case Application::Main:
-		DrawText("Pong Prototype", 40, 20, 40, WHITE);
+		if (playBtn.btnHovering)
+			playOL.Draw();
 
-		if (testButton.btnHovering)
-		{
-			testBtnOutline.Draw();
-		}
+		optsBtn.Draw();
 
-		testButton.Draw();
+		if (optsBtn.btnHovering)
+			optsOL.Draw();
 
+		playBtn.Draw();
+
+		break;
+
+	case Application::Modes:
+		if (returnBtn.btnHovering)
+			returnOL.Draw();
+
+		returnBtn.Draw();
 		break;
 
 	case Application::Options:
+		if (returnBtn.btnHovering)
+			returnOL.Draw();
 
+		returnBtn.Draw();
 		break;
 
 	case Application::Credits:
+		if (returnBtn.btnHovering)
+			returnOL.Draw();
 
+		returnBtn.Draw();
 		break;
 	}
 }

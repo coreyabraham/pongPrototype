@@ -21,6 +21,7 @@ void Application::Run()
 	if (enableAudio)
 	{
 		InitAudioDevice();
+		SetMasterVolume(0.5f);
 	}
 	
 	SetTargetFPS(targetFPS);
@@ -43,12 +44,14 @@ void Application::Run()
 
 void Application::Load()
 {
-	modifyCoreState(Intro);
+	//modifyCoreState(Intro);
+	modifyTitleState(Main);
+	loadLocalData();
 }
 
 void Application::Unload()
 {
-	// Add unloadables here!
+	// Add Data Here!
 }
 
 void Application::Update(float deltaTime)

@@ -3,7 +3,7 @@
 #include "application.h"
 
 // Struct(s) //
-class ClickButton
+struct ClickButton
 {
 public:
 	// Constructor(s) and Deconstructor(s) //
@@ -18,7 +18,44 @@ public:
 
 		coreButton.width = Size.x;
 		coreButton.height = Size.y;
-	};
+	}
+
+
+	ClickButton(Vector2 Position, Vector2 Size, const char* text)
+	{
+		coreButton.x = Position.x;
+		coreButton.y = Position.y;
+
+		coreButton.width = Size.x;
+		coreButton.height = Size.y;
+
+		btnText = text;
+	}
+
+	ClickButton(Vector2 Position, Vector2 Size, const char* text, Color bgColor)
+	{
+		coreButton.x = Position.x;
+		coreButton.y = Position.y;
+
+		coreButton.width = Size.x;
+		coreButton.height = Size.y;
+
+		btnText = text;
+		btnColor = bgColor;
+	}
+
+	ClickButton(Vector2 Position, Vector2 Size, const char* text, Color bgColor, Color fgColor)
+	{
+		coreButton.x = Position.x;
+		coreButton.y = Position.y;
+
+		coreButton.width = Size.x;
+		coreButton.height = Size.y;
+
+		btnText = text;
+		btnColor = bgColor;
+		txtColor = fgColor;
+	}
 
 	// Value(s) and Variable(s) //
 	Rectangle coreButton = { 20, 20, 80, 40 };
@@ -40,7 +77,11 @@ public:
 			btnAction = false;
 
 			if (IsMouseButtonReleased(MOUSE_BUTTON_LEFT))
+			{
+				btnHovering = false;
 				btnAction = true;
+			}
+
 			else
 				btnAction = false;
 		}
@@ -59,7 +100,7 @@ public:
 	}
 };
 
-class HoverOutline
+struct HoverOutline
 {
 private:
 	// Default(s) //
@@ -67,6 +108,8 @@ private:
 
 public:
 	// Constructor(s) and Deconstructor(s) //
+	~HoverOutline() {};
+
 	HoverOutline(ClickButton targetButton)
 	{
 		outline.x = targetButton.coreButton.x;
@@ -107,10 +150,8 @@ public:
 		outlineColor = color;
 	};
 
-	~HoverOutline() {};
-
 	// Value(s) and Variable(s) //
-	Rectangle outline = {  }; // Requires Constructor in order to execute!
+	Rectangle outline = {  };
 	Color outlineColor = WHITE;
 
 	// Function(s) //
