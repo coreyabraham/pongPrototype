@@ -1,5 +1,6 @@
 // Header(s) //
-#include "common.h"
+#include "states.h"
+#include <string>
 
 // Class(es) //
 Application::Application()

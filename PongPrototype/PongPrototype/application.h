@@ -33,6 +33,6 @@ public:
 	static const bool canDebug = false;
 
 	// Global Variable(s) / Value(s) //
-	enum CoreState { Intro = 1, Title = 2, Game = 3 };
+	enum CoreState { Intro = 1, Game = 2 };
 	enum TitleState { Main = 1, Options = 2, Credits = 3 };
 };
