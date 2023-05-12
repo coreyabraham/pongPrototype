@@ -51,7 +51,7 @@ void Application::Load()
 
 void Application::Unload()
 {
-	// Add Data Here!
+	localUnloadData();
 }
 
 void Application::Update(float deltaTime)
