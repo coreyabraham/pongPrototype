@@ -2,13 +2,24 @@
 #pragma once
 #include "application.h"
 
+// Function(s) //
+inline int floatToInt(float value) 
+{ 
+	return static_cast<int>(value); 
+}
+
 // Struct(s) //
 struct ClickButton
 {
-public:
-	// Constructor(s) and Deconstructor(s) //
+private:
+	bool outlineApplicable = false;
+	Color highlightColor = WHITE;
+	float highlightThickness = 5.0f;
 
-	ClickButton() {};
+	Rectangle outline = {  };
+
+public:
+	// Constructor(s) //
 	~ClickButton() {};
 
 	ClickButton(Vector2 Position, Vector2 Size)
@@ -19,7 +30,6 @@ public:
 		coreButton.width = Size.x;
 		coreButton.height = Size.y;
 	}
-
 
 	ClickButton(Vector2 Position, Vector2 Size, const char* text)
 	{
@@ -57,6 +67,73 @@ public:
 		txtColor = fgColor;
 	}
 
+	ClickButton(Vector2 Position, Vector2 Size, const char* text, Color bgColor, Color fgColor, 
+		bool showOutline)
+	{
+		coreButton.x = Position.x;
+		coreButton.y = Position.y;
+
+		coreButton.width = Size.x;
+		coreButton.height = Size.y;
+
+		btnText = text;
+		btnColor = bgColor;
+		txtColor = fgColor;
+
+		outlineApplicable = true;
+
+		outline.x = coreButton.x;
+		outline.y = coreButton.y;
+
+		outline.width = coreButton.width + highlightThickness;
+		outline.height = coreButton.height + highlightThickness;
+	}
+
+	ClickButton(Vector2 Position, Vector2 Size, const char* text, Color bgColor, Color fgColor, 
+		bool showOutline, float outlineThickness)
+	{
+		coreButton.x = Position.x;
+		coreButton.y = Position.y;
+
+		coreButton.width = Size.x;
+		coreButton.height = Size.y;
+
+		btnText = text;
+		btnColor = bgColor;
+		txtColor = fgColor;
+
+		outlineApplicable = true;
+
+		outline.x = coreButton.x;
+		outline.y = coreButton.y;
+
+		outline.width = coreButton.width + outlineThickness;
+		outline.height = coreButton.height + outlineThickness;
+	}
+
+	ClickButton(Vector2 Position, Vector2 Size, const char* text, Color bgColor, Color fgColor, 
+		bool showOutline, float outlineThickness, Color outlineColor)
+	{
+		coreButton.x = Position.x;
+		coreButton.y = Position.y;
+
+		coreButton.width = Size.x;
+		coreButton.height = Size.y;
+
+		btnText = text;
+		btnColor = bgColor;
+		txtColor = fgColor;
+
+		outlineApplicable = true;
+		highlightColor = outlineColor;
+
+		outline.x = coreButton.x;
+		outline.y = coreButton.y;
+
+		outline.width = coreButton.width + outlineThickness;
+		outline.height = coreButton.height + outlineThickness;
+	}
+
 	// Value(s) and Variable(s) //
 	Rectangle coreButton = { 20, 20, 80, 40 };
 
@@ -68,7 +145,7 @@ public:
 	Color btnColor = WHITE;
 	Color txtColor = BLACK;
 
-	// Function(s) //
+	// Core Function(s) //
 	void Update()
 	{
 		if (CheckCollisionPointRec(GetMousePosition(), coreButton))
@@ -96,67 +173,99 @@ public:
 	void Draw()
 	{
 		DrawRectangleRec(coreButton, btnColor);
-		DrawText(btnText, coreButton.x, coreButton.y, coreButton.height - 10, txtColor);
+		DrawText(btnText, floatToInt(coreButton.x), floatToInt(coreButton.y), floatToInt(coreButton.height - 10), txtColor);
+	}
+
+	// Outline Function(s) //
+	void DrawOutline()
+	{
+		if (outlineApplicable)
+		{
+			DrawRectangleRec(outline, highlightColor);
+		}
 	}
 };
 
-struct HoverOutline
+struct Player
 {
 private:
 	// Default(s) //
-	float thickness = 5.0f;
+	float PaddleWidth = 10.0f;
+	float PaddleHeight = 100.0f;
+
+	float PaddleY = (Application::windowHeight / 2) - PaddleHeight;
+	float defaultY = PaddleY;
+
+	KeyboardKey PaddleUP = KEY_UP;
+	KeyboardKey PaddleDOWN = KEY_DOWN;
+	KeyboardKey PaddleSLOW = KEY_SPACE;
+
+	float maxSpeed = 500.0f;
+	float currentSpeed = maxSpeed;
+	float halfSpeed = maxSpeed / 2.0f;
+	
+	float PaddleX = 50.0f;
+	Color PaddleColor = WHITE;
 
 public:
-	// Constructor(s) and Deconstructor(s) //
-	~HoverOutline() {};
+	// Constructor(s) //
+	Player() {};
+	~Player() {};
 
-	HoverOutline(ClickButton targetButton)
+	Player(float X, KeyboardKey Up, KeyboardKey Down, KeyboardKey Slow)
 	{
-		outline.x = targetButton.coreButton.x;
-		outline.y = targetButton.coreButton.y;
-
-		outline.width = targetButton.coreButton.width + thickness;
-		outline.height = targetButton.coreButton.height + thickness / 2;
+		PaddleX = X;
+		PaddleUP = Up;
+		PaddleDOWN = Down;
+		PaddleSLOW = Slow;
 	};
 
-	HoverOutline(ClickButton targetButton, float Thickness)
+	Player(float X, KeyboardKey Up, KeyboardKey Down, KeyboardKey Slow, Color color)
 	{
-		outline.x = targetButton.coreButton.x;
-		outline.y = targetButton.coreButton.y;
-
-		outline.width = targetButton.coreButton.width + Thickness;
-		outline.height = targetButton.coreButton.height + Thickness / 2;
+		PaddleX = X;
+		PaddleUP = Up;
+		PaddleDOWN = Down;
+		PaddleSLOW = Slow;
+		PaddleColor = color;
 	};
-
-	HoverOutline(ClickButton targetButton, Color color)
-	{
-		outline.x = targetButton.coreButton.x;
-		outline.y = targetButton.coreButton.y;
-
-		outline.width = targetButton.coreButton.width + thickness;
-		outline.height = targetButton.coreButton.height + thickness / 2;
-
-		outlineColor = color;
-	};
-
-	HoverOutline(ClickButton targetButton, float Thickness, Color color)
-	{
-		outline.x = targetButton.coreButton.x;
-		outline.y = targetButton.coreButton.y;
-
-		outline.width = targetButton.coreButton.width + Thickness;
-		outline.height = targetButton.coreButton.height + Thickness / 2;
-
-		outlineColor = color;
-	};
-
+	
 	// Value(s) and Variable(s) //
-	Rectangle outline = {  };
-	Color outlineColor = WHITE;
+	Rectangle Paddle { PaddleX, PaddleY, PaddleWidth, PaddleHeight };
 
-	// Function(s) //
+	void Update()
+	{
+		float deltaTime = GetFrameTime();
+
+		if (IsKeyDown(PaddleSLOW))
+		{
+			if (currentSpeed != halfSpeed)
+				currentSpeed = halfSpeed;
+		}
+
+		else
+		{
+			if (currentSpeed != maxSpeed)
+				currentSpeed = maxSpeed;
+		}
+
+		if (IsKeyDown(PaddleUP))
+		{
+			Paddle.y -= currentSpeed * deltaTime;
+		}
+
+		if (IsKeyDown(PaddleDOWN))
+		{
+			Paddle.y += currentSpeed * deltaTime;
+		}
+	}
+
 	void Draw()
 	{
-		DrawRectangleRec(outline, outlineColor);
+		DrawRectangleRec(Paddle, PaddleColor);
+	}
+
+	void Reset()
+	{
+		 Paddle.y = defaultY;
 	}
 };

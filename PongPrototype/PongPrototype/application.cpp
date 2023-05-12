@@ -44,8 +44,8 @@ void Application::Run()
 
 void Application::Load()
 {
-	//modifyCoreState(Intro);
-	modifyTitleState(Main);
+	modifyCoreState(Intro);
+	//modifyTitleState(Main);
 	loadLocalData();
 }
 
@@ -58,6 +58,7 @@ void Application::Update(float deltaTime)
 {
 	updateCoreState();
 	updateTitleState();
+	updateGameState();
 }
 
 void Application::Draw()
@@ -72,6 +73,7 @@ void Application::Draw()
 
 	drawCoreState();
 	drawTitleState();
+	drawGameState();
 
 	EndDrawing();
 }

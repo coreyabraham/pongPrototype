@@ -2,16 +2,13 @@
 #pragma once
 
 #include <iostream>
-#include <math.h>
-
 #include "application.h"
 #include "common.h"
 
 // Value(s) //
-Vector2 logoPos = {
-	round(Application::windowWidth / 2 - 128), 
-	round(Application::windowHeight / 2 - 128)
-};
+// Intro
+int logoPosX = floatToInt(Application::windowWidth / 2 - 128);
+int logoPosY = floatToInt(Application::windowHeight / 2 - 128);
 
 Color logoBorderColor = BLUE;
 Color logoFillColor = SKYBLUE;
@@ -22,6 +19,7 @@ bool introSoundPlayed = false;
 // Variable(s) //
 Application::CoreState currentCoreState;
 Application::TitleState currentTitleState;
+Application::GameState currentGameState;
 
 int framesCounter = 0;
 int lettersCount = 0;
@@ -35,22 +33,64 @@ int rightSideRecHeight = 16;
 int state = 0;
 float alpha = 1.0f;
 
-// Misc Data //
-ClickButton playBtn = { Vector2{ 20, 100 }, Vector2{ 80, 40 }, "PLAY", BLACK, WHITE };
-HoverOutline playOL = { playBtn };
+// Game - Generic
+bool gameStarted = false;
+int frameOnStart = 0;
+int hideTextOnFrame = 100;
 
-ClickButton optsBtn = { Vector2{ 20, 180 }, Vector2{ 130, 40 }, "OPTIONS", BLACK, WHITE };
-HoverOutline optsOL = { optsBtn };
+int leftScore = 0;
+int rightScore = 0;
 
-ClickButton returnBtn = { Vector2{ 20, Application::windowHeight - 90 }, Vector2{ 130, 40 }, "RETURN", RED, WHITE};
-HoverOutline returnOL = { returnBtn };
+Player player1 = { 50.0f, KEY_W, KEY_S, KEY_SPACE, BLUE };
+Player player2 = { 100.0f, KEY_UP, KEY_DOWN, KEY_RIGHT_CONTROL, RED };
+
+// Button(s) //
+// Shared
+ClickButton returnBtn = { Vector2{ 20, Application::windowHeight - 90 }, Vector2{ 130, 40 }, "RETURN", RED, WHITE, true, 2.5f};
+
+// "Main"
+ClickButton playBtn = { Vector2{ 20, 200 }, Vector2{ 70, 40 }, "Play", BLACK, WHITE, true, 2.5f };
+ClickButton optsBtn = { Vector2{ 20, 280 }, Vector2{ 120, 40 }, "Options", BLACK, WHITE, true, 2.5f };
+ClickButton cdsBtn = { Vector2{ 20, 360 }, Vector2{ 120, 40 }, "Credits", BLACK, WHITE, true, 2.5f };
+ClickButton exitBtn = { Vector2{ 20, 440 }, Vector2{ 70, 40 }, "Exit", BLACK, WHITE, true, 2.5f };
+
+// "Modes"
+ClickButton genBtn = { Vector2{ 20, 200 }, Vector2{ 210, 40 }, "Generic Mode", BLACK, WHITE, true, 2.5f };
+ClickButton sglBtn = { Vector2{ 20, 280 }, Vector2{ 210, 40 }, "Singleplayer Mode", BLACK, WHITE, true, 2.5f };
 
 Sound click;
+Sound back;
+Sound start;
+Sound begin;
+Sound error;
+Sound onExit;
 
-// Function(s) //
+Music titleBGM;
+
+// Core Function(s) //
 void loadLocalData()
 {
 	click = LoadSound("resources\\audio\\click.wav");
+	back = LoadSound("resources\\audio\\back.wav");
+	start = LoadSound("resources\\audio\\start.wav");
+	begin = LoadSound("resources\\audio\\begin.wav");
+	error = LoadSound("resources\\audio\\error.wav");
+	onExit = LoadSound("resources\\audio\\exit.wav");
+
+	titleBGM = LoadMusicStream("resources\\audio\\titleBGM.mp3");
+	SetMusicVolume(titleBGM, 0.25f);
+}
+
+void localUnloadData()
+{
+	UnloadSound(click);
+	UnloadSound(back);
+	UnloadSound(start);
+	UnloadSound(begin);
+	UnloadSound(error);
+	UnloadSound(onExit);
+
+	UnloadMusicStream(titleBGM);
 }
 
 void modifyCoreState(Application::CoreState state)
@@ -63,6 +103,12 @@ void modifyTitleState(Application::TitleState state)
 	currentTitleState = state;
 }
 
+void modifyGameState(Application::GameState state)
+{
+	currentGameState = state;
+}
+
+// Update Function(s)
 void updateCoreState()
 {
 	switch (currentCoreState)
@@ -82,6 +128,13 @@ void updateCoreState()
 					break;
 
 				case 1:
+					if (Application::enableAudio && !introSoundPlayed)
+					{
+						Sound introSfx = LoadSound("resources\\audio\\intro.wav");
+						PlaySound(introSfx);
+						introSoundPlayed = true;
+					}
+
 					topSideRecWidth += 4;
 					leftSideRecHeight += 4;
 
@@ -93,13 +146,6 @@ void updateCoreState()
 					break;
 
 				case 2:
-					if (Application::enableAudio && !introSoundPlayed)
-					{
-						Sound introSfx = LoadSound("resources\\audio\\intro.wav");
-						PlaySound(introSfx);
-						introSoundPlayed = true;
-					}
-
 					bottomSideRecWidth += 4;
 					rightSideRecHeight += 4;
 
@@ -128,7 +174,7 @@ void updateCoreState()
 							alpha = 0.0f;
 							state = 0;
 
-							modifyCoreState(Application::None);
+							modifyCoreState(Application::Title);
 							modifyTitleState(Application::Main);
 						}
 					}
@@ -143,8 +189,18 @@ void updateCoreState()
 			}
 
 			break;
+
+		case Application::Title:
+			if (!IsMusicStreamPlaying(titleBGM))
+				PlayMusicStream(titleBGM);
+
+			UpdateMusicStream(titleBGM);
+
+			break;
+
 		case Application::Game:
 			// Add Data Here!
+			
 			break;
 	}
 }
@@ -155,7 +211,9 @@ void updateTitleState()
 	{
 	case Application::Main:
 		playBtn.Update();
-		optsBtn.Draw();
+		optsBtn.Update();
+		cdsBtn.Update();
+		exitBtn.Update();
 
 		if (playBtn.btnAction)
 		{
@@ -173,15 +231,60 @@ void updateTitleState()
 			modifyTitleState(Application::Options);
 		}
 
+		if (cdsBtn.btnAction)
+		{
+			if (Application::enableAudio)
+				PlaySound(click);
+
+			modifyTitleState(Application::Credits);
+		}
+
+		if (exitBtn.btnAction)
+		{
+			if (Application::enableAudio)
+			{
+				PlaySound(onExit);
+				SetWindowOpacity(0.0f);
+				while (IsSoundPlaying(onExit)) { }
+				CloseWindow();
+			}
+		}
+
 		break;
 
 	case Application::Modes:
+		genBtn.Update();
+		sglBtn.Update();
 		returnBtn.Update();
+
+		if (genBtn.btnAction)
+		{
+			if (Application::enableAudio)
+				PlaySound(start);
+
+			modifyCoreState(Application::Game);
+			modifyTitleState(Application::Empty);
+			modifyGameState(Application::Generic);
+		}
+
+		if (sglBtn.btnAction)
+		{
+			if (Application::enableAudio)
+				PlaySound(start);
+
+			modifyCoreState(Application::Game);
+			modifyTitleState(Application::Empty);
+			modifyGameState(Application::Solo);
+		}
 
 		if (returnBtn.btnAction)
 		{
+			if (Application::enableAudio)
+				PlaySound(back);
+
 			modifyTitleState(Application::Main);
 		}
+
 		break;
 
 	case Application::Options:
@@ -189,8 +292,12 @@ void updateTitleState()
 
 		if (returnBtn.btnAction)
 		{
+			if (Application::enableAudio)
+				PlaySound(back);
+
 			modifyTitleState(Application::Main);
 		}
+
 		break;
 
 	case Application::Credits:
@@ -198,12 +305,58 @@ void updateTitleState()
 
 		if (returnBtn.btnAction)
 		{
+			if (Application::enableAudio)
+				PlaySound(back);
+
 			modifyTitleState(Application::Main);
 		}
+
 		break;
 	}
 }
 
+void updateGameState()
+{
+	switch (currentGameState)
+	{
+		case Application::Generic:
+			if (!gameStarted && IsKeyPressed(KEY_ENTER))
+			{
+				gameStarted = true;
+				PlaySound(begin);
+			}
+
+			if (gameStarted && IsKeyPressed(KEY_BACKSPACE))
+			{
+				PlaySound(error);
+
+				player1.Reset();
+				player2.Reset();
+				// Clear Logic Here!
+
+				modifyGameState(Application::Null);
+				modifyCoreState(Application::Title);
+				modifyTitleState(Application::Modes);
+				
+				gameStarted = false;
+			}
+
+			if (gameStarted)
+			{
+				player1.Update();
+				player2.Update();
+			}
+
+			break;
+
+		case Application::Solo:
+			// Insert Execution Here!
+
+			break;
+	}
+}
+
+// Draw Function(s) //
 void drawCoreState()
 {
 	switch (currentCoreState)
@@ -214,32 +367,32 @@ void drawCoreState()
 			case 0:
 				if ((framesCounter / 15) % 2)
 				{
-					DrawRectangle(logoPos.x, logoPos.y, 16, 16, logoBorderColor);
+					DrawRectangle(logoPosX, logoPosY, 16, 16, logoBorderColor);
 				}
 
 				break;
 
 			case 1:
-				DrawRectangle(logoPos.x, logoPos.y, topSideRecWidth, 16, logoBorderColor);
-				DrawRectangle(logoPos.x, logoPos.y, 16, leftSideRecHeight, logoBorderColor);
+				DrawRectangle(logoPosX, logoPosY, topSideRecWidth, 16, logoBorderColor);
+				DrawRectangle(logoPosX, logoPosY, 16, leftSideRecHeight, logoBorderColor);
 
 				break;
 
 			case 2:
-				DrawRectangle(logoPos.x, logoPos.y, topSideRecWidth, 16, logoBorderColor);
-				DrawRectangle(logoPos.x, logoPos.y, 16, leftSideRecHeight, logoBorderColor);
+				DrawRectangle(logoPosX, logoPosY, topSideRecWidth, 16, logoBorderColor);
+				DrawRectangle(logoPosX, logoPosY, 16, leftSideRecHeight, logoBorderColor);
 
-				DrawRectangle(logoPos.x + 240, logoPos.y, 16, rightSideRecHeight, logoBorderColor);
-				DrawRectangle(logoPos.x, logoPos.y + 240, bottomSideRecWidth, 16, logoBorderColor);
+				DrawRectangle(logoPosX + 240, logoPosY, 16, rightSideRecHeight, logoBorderColor);
+				DrawRectangle(logoPosX, logoPosY + 240, bottomSideRecWidth, 16, logoBorderColor);
 
 				break;
 
 			case 3:
-				DrawRectangle(logoPos.x, logoPos.y, topSideRecWidth, 16, Fade(logoBorderColor, alpha));
-				DrawRectangle(logoPos.x, logoPos.y + 16, 16, leftSideRecHeight - 32, Fade(logoBorderColor, alpha));
+				DrawRectangle(logoPosX, logoPosY, topSideRecWidth, 16, Fade(logoBorderColor, alpha));
+				DrawRectangle(logoPosX, logoPosY + 16, 16, leftSideRecHeight - 32, Fade(logoBorderColor, alpha));
 
-				DrawRectangle(logoPos.x + 240, logoPos.y + 16, 16, rightSideRecHeight - 32, Fade(logoBorderColor, alpha));
-				DrawRectangle(logoPos.x, logoPos.y + 240, bottomSideRecWidth, 16, Fade(logoBorderColor, alpha));
+				DrawRectangle(logoPosX + 240, logoPosY + 16, 16, rightSideRecHeight - 32, Fade(logoBorderColor, alpha));
+				DrawRectangle(logoPosX, logoPosY + 240, bottomSideRecWidth, 16, Fade(logoBorderColor, alpha));
 
 				DrawRectangle(GetScreenWidth() / 2 - 112, GetScreenHeight() / 2 - 112, 224, 224, Fade(logoFillColor, alpha));
 				DrawText(TextSubtext(introText, 0, lettersCount), GetScreenWidth() / 2 - 88, GetScreenHeight() / 2 + 48, 50, Fade(logoTextColor, alpha));
@@ -281,44 +434,129 @@ void drawTitleState()
 			break;
 	}
 
-	DrawText("Build 0.2.1", 10, GetScreenHeight() - 30, 10, WHITE);
-	DrawText(text, pos.x, pos.y, size, color);
+	if (Application::canDebug)
+	{
+		Application app;
+		DrawText(app.buildInfo, 10, GetScreenHeight() - 20, 10, WHITE);
+	}
+
+	DrawText(text, static_cast<int>(pos.x), static_cast<int>(pos.y), size, color);
+
+	int genericTextScale = 20;
 
 	// State-Specific //
 	switch (currentTitleState)
 	{
 	case Application::Main:
-		if (playBtn.btnHovering)
-			playOL.Draw();
 
-		optsBtn.Draw();
+		if (playBtn.btnHovering)
+			playBtn.DrawOutline();
 
 		if (optsBtn.btnHovering)
-			optsOL.Draw();
+			optsBtn.DrawOutline();
+
+		if (cdsBtn.btnHovering)
+			cdsBtn.DrawOutline();
+
+		if (exitBtn.btnHovering)
+			exitBtn.DrawOutline();
 
 		playBtn.Draw();
+		optsBtn.Draw();
+		cdsBtn.Draw();
+		exitBtn.Draw();
 
 		break;
 
 	case Application::Modes:
-		if (returnBtn.btnHovering)
-			returnOL.Draw();
+		DrawText("Selectable Modes: ", (GetScreenWidth() / 2) / genericTextScale, 160, genericTextScale, color);
+		
+		DrawText(
+			"> Your Generic (Standard) Pong Game, Requires Two Players to Play!", 
+			(GetScreenWidth() / 2) / genericTextScale, 
+			floatToInt(genBtn.coreButton.y) + genericTextScale * 2 + 5,
+			genericTextScale, 
+			color
+		);
 
+		DrawText(
+			"> A Singleplayer Pong Game, bounce the ball against a wall and see how long you can go!",
+			(GetScreenWidth() / 2) / genericTextScale,
+			floatToInt(sglBtn.coreButton.y) + genericTextScale * 2 + 5,
+			genericTextScale - 2,
+			color
+		);
+
+		if (genBtn.btnHovering)
+			genBtn.DrawOutline();
+
+		if (sglBtn.btnHovering)
+			sglBtn.DrawOutline();
+
+		if (returnBtn.btnHovering)
+			returnBtn.DrawOutline();
+
+		genBtn.Draw();
+		sglBtn.Draw();
 		returnBtn.Draw();
 		break;
 
 	case Application::Options:
+		DrawText("To be introduced.", (GetScreenWidth() / 2) / genericTextScale, 160, genericTextScale, color);
+
 		if (returnBtn.btnHovering)
-			returnOL.Draw();
+			returnBtn.DrawOutline();
 
 		returnBtn.Draw();
 		break;
 
 	case Application::Credits:
+		DrawText("Prototype Developed by Corey Abraham.", (GetScreenWidth() / 2) / genericTextScale, 160, genericTextScale, color);
+		DrawText("Developed as a prototype for AIE, distrubution requires permission.", (GetScreenWidth() / 2) / genericTextScale, 180, genericTextScale, color);
+
 		if (returnBtn.btnHovering)
-			returnOL.Draw();
+			returnBtn.DrawOutline();
 
 		returnBtn.Draw();
+		break;
+	}
+}
+
+void drawGameState()
+{
+	int genericTextScale = 20;
+
+	switch (currentGameState)
+	{
+	case Application::Generic:
+		if (!gameStarted)
+		{
+			if (frameOnStart != 0)
+			{
+				frameOnStart = 0;
+			}
+
+			DrawText("Press ENTER to Start!", (GetScreenWidth() / 2) / genericTextScale, 80, genericTextScale, WHITE);
+		}
+
+		else
+		{
+			if (frameOnStart < hideTextOnFrame)
+			{
+				DrawText("Game started!", (GetScreenWidth() / 2) / genericTextScale, 80, genericTextScale, WHITE);
+			}
+
+			frameOnStart += 1;
+		}
+		
+		player1.Draw();
+		player2.Draw();
+
+		break;
+
+	case Application::Solo:
+		// Insert Drawing Here!
+		
 		break;
 	}
 }
