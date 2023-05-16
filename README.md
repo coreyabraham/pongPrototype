@@ -1,4 +1,4 @@
-# Pong Prototype (Raylib C/C++)
+# Pong Prototype (Raylib C / C++)
 
 A simple pong prototype done with Raylib C / C++ for a school project!
 There's not really much else to it honestly.
