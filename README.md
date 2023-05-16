@@ -6,8 +6,8 @@ There's not really much else to it honestly.
 # Keybindings
 > Player 1:
 ```
-W = Move Up
-S = Move Down
+Q = Move Up
+A = Move Down
 Left ALT = Slow Down
 ```
 
