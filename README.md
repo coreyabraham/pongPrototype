@@ -8,14 +8,14 @@ There's not really much else to it honestly.
 ```
 W = Move Up
 S = Move Down
-Space = Slow Down
+Left ALT = Slow Down
 ```
 
 > Player 2:
 ```
-Up Arrow = Move Up
-Down Arrow = Move Down
-Right Control = Slow Down
+I = Move Up
+K = Move Down
+Right ALT = Slow Down
 ```
 
 > Shared:
