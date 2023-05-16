@@ -18,6 +18,11 @@ Down Arrow = Move Down
 Right Control = Slow Down
 ```
 
+> Shared:
+```
+Backspace = Exit to Title Screen (Only works during Match!)
+```
+
 ## Acknowledgements
 
  - [Raylib C/C++ Library](https://github.com/raysan5/raylib/tree/master)
