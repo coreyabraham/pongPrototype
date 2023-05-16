@@ -4,7 +4,20 @@ A simple pong prototype done with Raylib C / C++ for a school project!
 There's not really much else to it honestly.
 
 # Keybindings
-P1: W - Move Up, S - Move Down | P2: Up Arrow - Move Up, Down Arrow - Move Down
+> Player 1:
+```
+W = Move Up
+S = Move Down
+Space = Slow Down
+```
+
+> Player 2:
+```
+Up Arrow = Move Up
+Down Arrow = Move Down
+Right Control = Slow Down
+```
+
 ## Acknowledgements
 
  - [Raylib C/C++ Library](https://github.com/raysan5/raylib/tree/master)
