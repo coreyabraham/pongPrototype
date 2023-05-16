@@ -13,8 +13,8 @@ Left ALT = Slow Down
 
 > Player 2:
 ```
-I = Move Up
-K = Move Down
+P = Move Up
+L = Move Down
 Right ALT = Slow Down
 ```
 
