@@ -1,17 +1,12 @@
 // Header(s) //
+#include "application.h"
 #include "states.h"
-#include <string>
+
+States StateManager;
 
 // Class(es) //
-Application::Application()
-{
-
-}
-
-Application::~Application()
-{
-
-}
+Application::Application() {  }
+Application::~Application() {  }
 
 // Function(s) //
 void Application::Run() 
@@ -44,21 +39,17 @@ void Application::Run()
 
 void Application::Load()
 {
-	modifyCoreState(Intro);
-	//modifyTitleState(Main);
-	loadLocalData();
+	StateManager.Init();
 }
 
 void Application::Unload()
 {
-	localUnloadData();
+	StateManager.Uninit();
 }
 
 void Application::Update(float deltaTime)
 {
-	updateCoreState();
-	updateTitleState();
-	updateGameState();
+	StateManager.UpdateStates();
 }
 
 void Application::Draw()
@@ -71,9 +62,7 @@ void Application::Draw()
 		DrawFPS(10, 10);
 	}
 
-	drawCoreState();
-	drawTitleState();
-	drawGameState();
+	StateManager.DrawStates();
 
 	EndDrawing();
 }

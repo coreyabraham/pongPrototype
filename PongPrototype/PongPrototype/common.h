@@ -20,6 +20,7 @@ private:
 
 public:
 	// Constructor(s) //
+	ClickButton() {};
 	~ClickButton() {};
 
 	ClickButton(Vector2 Position, Vector2 Size)
@@ -193,8 +194,8 @@ private:
 	float PaddleWidth = 10.0f;
 	float PaddleHeight = 100.0f;
 
+	float DefaultPaddleX = 50.0f;
 	float PaddleY = (Application::windowHeight / 2) - PaddleHeight;
-	float defaultY = PaddleY;
 
 	KeyboardKey PaddleUP = KEY_UP;
 	KeyboardKey PaddleDOWN = KEY_DOWN;
@@ -203,9 +204,6 @@ private:
 	float maxSpeed = 500.0f;
 	float currentSpeed = maxSpeed;
 	float halfSpeed = maxSpeed / 2.0f;
-	
-	float PaddleX = 50.0f;
-	Color PaddleColor = WHITE;
 
 public:
 	// Constructor(s) //
@@ -214,7 +212,7 @@ public:
 
 	Player(float X, KeyboardKey Up, KeyboardKey Down, KeyboardKey Slow)
 	{
-		PaddleX = X;
+		Paddle.x = X;
 		PaddleUP = Up;
 		PaddleDOWN = Down;
 		PaddleSLOW = Slow;
@@ -222,7 +220,7 @@ public:
 
 	Player(float X, KeyboardKey Up, KeyboardKey Down, KeyboardKey Slow, Color color)
 	{
-		PaddleX = X;
+		Paddle.x = X;
 		PaddleUP = Up;
 		PaddleDOWN = Down;
 		PaddleSLOW = Slow;
@@ -230,8 +228,10 @@ public:
 	};
 	
 	// Value(s) and Variable(s) //
-	Rectangle Paddle { PaddleX, PaddleY, PaddleWidth, PaddleHeight };
+	Rectangle Paddle { DefaultPaddleX, PaddleY, PaddleWidth, PaddleHeight };
+	Color PaddleColor = WHITE;
 
+	// Function(s) //
 	void Update()
 	{
 		float deltaTime = GetFrameTime();
@@ -251,11 +251,17 @@ public:
 		if (IsKeyDown(PaddleUP))
 		{
 			Paddle.y -= currentSpeed * deltaTime;
+
+			if (Paddle.y < 0 - Paddle.height)
+				Paddle.y = floatToInt(GetScreenHeight());
 		}
 
 		if (IsKeyDown(PaddleDOWN))
 		{
 			Paddle.y += currentSpeed * deltaTime;
+
+			if (Paddle.y > floatToInt(GetScreenHeight()))
+				Paddle.y = -Paddle.height;
 		}
 	}
 
@@ -266,6 +272,75 @@ public:
 
 	void Reset()
 	{
-		 Paddle.y = defaultY;
+		Paddle.y = PaddleY;
+	}
+};
+
+struct Ball
+{
+private:
+	// Default(s) //
+	Vector2 defaultBallPosition = { Application::windowWidth / 2, Application::windowHeight / 2 };
+	Vector2 defaultBallSpeed = { 300.0f, 300.0f };
+	Color defaultBallColor = WHITE;
+
+public:
+	// Constructor(s) //
+	Ball() {};
+	~Ball() {};
+
+	Ball(Color color)
+	{
+		ballColor = color;
+	}
+
+	Ball(Color color, float radius)
+	{
+		ballColor = color;
+		ballRadius = radius;
+	}
+
+	// Value(s) and Variable(s) //
+	Vector2 ballPosition = defaultBallPosition;
+	Vector2 ballSpeed = defaultBallSpeed;
+	Color ballColor = defaultBallColor;
+	float ballRadius = 5.0f;
+	bool ballCollided = false;
+
+	// Function(s) //
+	void Update()
+	{
+		ballPosition.x += ballSpeed.x * GetFrameTime();
+		ballPosition.y += ballSpeed.y * GetFrameTime();
+
+		ballCollided = false;
+
+		if (ballPosition.y < 0)
+		{
+			ballPosition.y = 0;
+			ballSpeed.y *= -1;
+
+			ballCollided = true;
+		}
+
+		if (ballPosition.y > floatToInt(GetScreenHeight()))
+		{
+			ballPosition.y = floatToInt(GetScreenHeight());
+			ballSpeed.y *= -1;
+
+			ballCollided = true;
+		}
+	}
+
+	void Draw()
+	{
+		DrawCircleV(ballPosition, ballRadius, ballColor);
+	}
+
+	void Reset()
+	{
+		ballPosition = defaultBallPosition;
+		ballSpeed = defaultBallSpeed;
+		ballColor = defaultBallColor;
 	}
 };
