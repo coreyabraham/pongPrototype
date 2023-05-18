@@ -8,6 +8,83 @@ inline int floatToInt(float value)
 	return static_cast<int>(value); 
 }
 
+Color generateCustomColor()
+{
+	int random = GetRandomValue(1, 23);
+
+	switch (random)
+	{
+		case 1:
+			return LIGHTGRAY;
+
+		case 2:
+			return GRAY;
+
+		case 3:
+			return DARKGRAY;
+
+		case 4:
+			return YELLOW;
+
+		case 5:
+			return GOLD;
+
+		case 6:
+			return ORANGE;
+
+		case 7:
+			return PINK;
+
+		case 8:
+			return RED;
+
+		case 9:
+			return MAROON;
+
+		case 10:
+			return GREEN;
+
+		case 11:
+			return LIME;
+
+		case 12:
+			return DARKGREEN;
+
+		case 13:
+			return SKYBLUE;
+
+		case 14:
+			return BLUE;
+
+		case 15:
+			return DARKBLUE;
+
+		case 16:
+			return PURPLE;
+
+		case 17:
+			return VIOLET;
+
+		case 18:
+			return DARKPURPLE;
+
+		case 19:
+			return BEIGE;
+
+		case 20:
+			return BROWN;
+
+		case 21:
+			return DARKBROWN;
+
+		case 22:
+			return MAGENTA;
+
+		default:
+			return WHITE;
+	}
+}
+
 // Struct(s) //
 struct ClickButton
 {
@@ -140,6 +217,7 @@ public:
 
 	bool btnAction = false;
 	bool btnHovering = false;
+	bool btnHoverSFXPlayed = false;
 
 	const char* btnText = "BtnTextHere";
 
@@ -177,12 +255,47 @@ public:
 		DrawText(btnText, floatToInt(coreButton.x), floatToInt(coreButton.y), floatToInt(coreButton.height - 10), txtColor);
 	}
 
-	// Outline Function(s) //
 	void DrawOutline()
 	{
-		if (outlineApplicable)
+		if (outlineApplicable && btnHovering)
 		{
 			DrawRectangleRec(outline, highlightColor);
+		}
+	}
+
+	// Other Function(s) //
+	void HandleClick(Sound playbackSound, bool useStates, 
+		States::CoreState coreState, States::TitleState titleState, States::GameState gameState)
+	{
+		if (btnAction)
+		{
+			if (Application::enableAudio)
+				PlaySound(playbackSound);
+
+			if (useStates)
+			{
+				currentCoreState = coreState;
+				currentTitleState = titleState;
+				currentGameState = gameState;
+			}
+		}
+	}
+
+	void HandleSound(Sound playbackSound)
+	{
+		if (btnHovering)
+		{
+			if (Application::enableAudio && !btnHoverSFXPlayed)
+			{
+				PlaySound(playbackSound);
+				btnHoverSFXPlayed = true;
+			}
+		}
+
+		else
+		{
+			if (Application::enableAudio && btnHoverSFXPlayed)
+				btnHoverSFXPlayed = false;
 		}
 	}
 };
@@ -199,11 +312,11 @@ private:
 
 	KeyboardKey PaddleUP = KEY_UP;
 	KeyboardKey PaddleDOWN = KEY_DOWN;
-	KeyboardKey PaddleSLOW = KEY_SPACE;
+	KeyboardKey PaddleFAST = KEY_SPACE;
 
-	float maxSpeed = 500.0f;
-	float currentSpeed = maxSpeed;
-	float halfSpeed = maxSpeed / 2.0f;
+	float maxSpeed = 1000.0f;
+	float standardSpeed = maxSpeed / 2;
+	float currentSpeed = standardSpeed;
 
 public:
 	// Constructor(s) //
@@ -215,7 +328,7 @@ public:
 		Paddle.x = X;
 		PaddleUP = Up;
 		PaddleDOWN = Down;
-		PaddleSLOW = Slow;
+		PaddleFAST = Slow;
 	};
 
 	Player(float X, KeyboardKey Up, KeyboardKey Down, KeyboardKey Slow, Color color)
@@ -223,7 +336,7 @@ public:
 		Paddle.x = X;
 		PaddleUP = Up;
 		PaddleDOWN = Down;
-		PaddleSLOW = Slow;
+		PaddleFAST = Slow;
 		PaddleColor = color;
 	};
 	
@@ -236,16 +349,16 @@ public:
 	{
 		float deltaTime = GetFrameTime();
 
-		if (IsKeyDown(PaddleSLOW))
+		if (IsKeyDown(PaddleFAST))
 		{
-			if (currentSpeed != halfSpeed)
-				currentSpeed = halfSpeed;
+			if (currentSpeed != maxSpeed)
+				currentSpeed = maxSpeed;
 		}
 
 		else
 		{
-			if (currentSpeed != maxSpeed)
-				currentSpeed = maxSpeed;
+			if (currentSpeed != standardSpeed)
+				currentSpeed = standardSpeed;
 		}
 
 		if (IsKeyDown(PaddleUP))
