@@ -16,7 +16,7 @@ void Application::Run()
 	if (enableAudio)
 	{
 		InitAudioDevice();
-		SetMasterVolume(0.5f);
+		SetMasterVolume(masterVolume);
 	}
 	
 	SetTargetFPS(targetFPS);

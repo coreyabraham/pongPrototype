@@ -88,6 +88,8 @@ Color generateCustomColor()
 // Struct(s) //
 struct ClickButton
 {
+	Application app;
+
 private:
 	bool outlineApplicable = false;
 	Color highlightColor = WHITE;
@@ -269,7 +271,7 @@ public:
 	{
 		if (btnAction)
 		{
-			if (Application::enableAudio)
+			if (app.enableAudio)
 				PlaySound(playbackSound);
 
 			if (useStates)
@@ -285,7 +287,7 @@ public:
 	{
 		if (btnHovering)
 		{
-			if (Application::enableAudio && !btnHoverSFXPlayed)
+			if (app.enableAudio && !btnHoverSFXPlayed)
 			{
 				PlaySound(playbackSound);
 				btnHoverSFXPlayed = true;
@@ -294,7 +296,7 @@ public:
 
 		else
 		{
-			if (Application::enableAudio && btnHoverSFXPlayed)
+			if (app.enableAudio && btnHoverSFXPlayed)
 				btnHoverSFXPlayed = false;
 		}
 	}
@@ -343,6 +345,7 @@ public:
 	// Value(s) and Variable(s) //
 	Rectangle Paddle { DefaultPaddleX, PaddleY, PaddleWidth, PaddleHeight };
 	Color PaddleColor = WHITE;
+	bool canHitBall = true;
 
 	// Function(s) //
 	void Update()

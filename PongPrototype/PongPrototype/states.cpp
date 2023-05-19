@@ -39,6 +39,7 @@ bool gameHalted = false;
 
 int maxScoreCount = 3;
 bool playerWon = false;
+bool p1Success = false;
 
 int plr1Score = 0;
 int plr2Score = 0;
@@ -64,6 +65,8 @@ ClickButton exitBtn = { Vector2{ 20, 440 }, Vector2{ 70, 40 }, "Exit", BLACK, WH
 
 ClickButton genBtn = { Vector2{ 20, 200 }, Vector2{ 210, 40 }, "Generic Mode", BLACK, WHITE, true, 2.5f };
 ClickButton sglBtn = { Vector2{ 20, 280 }, Vector2{ 280, 40 }, "Singleplayer Mode", BLACK, WHITE, true, 2.5f };
+
+ClickButton fsBtn = { Vector2{ 20, 200 }, Vector2{ 285, 40 }, "Toggle Fullscreen", BLACK, WHITE, true, 2.5f };
 
 Sound click;
 Sound back;
@@ -91,36 +94,66 @@ States::~States() {  }
 // Class Function(s) //
 void States::Init()
 {
-	if (Application::enableAudio)
+	Application app;
+	
+	if (app.enableAudio)
 	{
+
 		player1.PaddleColor = generateCustomColor();
 		player2.PaddleColor = generateCustomColor();
 
 		click = LoadSound("resources\\audio\\sounds\\click.wav");
+		SetSoundVolume(click, app.soundVolume);
+
 		back = LoadSound("resources\\audio\\sounds\\back.wav");
+		SetSoundVolume(back, app.soundVolume);
+
 		hover = LoadSound("resources\\audio\\sounds\\hover.wav");
+		SetSoundVolume(hover, app.soundVolume);
+
 		start = LoadSound("resources\\audio\\sounds\\start.wav");
+		SetSoundVolume(start, app.soundVolume);
+
 		begin = LoadSound("resources\\audio\\sounds\\begin.wav");
+		SetSoundVolume(begin, app.soundVolume);
+
 		error = LoadSound("resources\\audio\\sounds\\error.wav");
+		SetSoundVolume(error, app.soundVolume);
+
 		onExit = LoadSound("resources\\audio\\sounds\\exit.wav");
+		SetSoundVolume(onExit, app.soundVolume);
 
 		paused = LoadSound("resources\\audio\\sounds\\gamePause.wav");
+		SetSoundVolume(paused, app.soundVolume);
+
 		unpaused = LoadSound("resources\\audio\\sounds\\gameUnpause.wav");
+		SetSoundVolume(unpaused, app.soundVolume);
 
 		ballCollision = LoadSound("resources\\audio\\sounds\\ballCollision.wav");
+		SetSoundVolume(ballCollision, app.soundVolume);
+
 		ballHit = LoadSound("resources\\audio\\sounds\\ballHit.wav");
+		SetSoundVolume(ballHit, app.soundVolume);
+
 		matchPoint = LoadSound("resources\\audio\\sounds\\matchPoint.wav");
+		SetSoundVolume(matchPoint, app.soundVolume);
+
 		matchWin = LoadSound("resources\\audio\\sounds\\matchWin.wav");
+		SetSoundVolume(matchWin, app.soundVolume);
 
 		titleBGM = LoadMusicStream("resources\\audio\\music\\titleBGM.mp3");
+		SetMusicVolume(titleBGM, app.musicVolume);
+
 		gameBGM = LoadMusicStream("resources\\audio\\music\\gameBGM.mp3");
-		SetMusicVolume(titleBGM, 0.25f); SetMusicVolume(gameBGM, 0.25f);
+		SetMusicVolume(gameBGM, app.musicVolume);
 	}
 }
 
 void States::Uninit()
 {
-	if (Application::enableAudio)
+	Application app;
+
+	if (app.enableAudio)
 	{
 		UnloadSound(click);
 		UnloadSound(back);
@@ -145,6 +178,8 @@ void States::Uninit()
 
 void States::UpdateStates()
 {
+	Application app;
+	
 	// Core
 	switch (currentCoreState)
 	{
@@ -163,7 +198,8 @@ void States::UpdateStates()
 			break;
 
 		case 1:
-			if (Application::enableAudio && !introSoundPlayed)
+
+			if (app.enableAudio && !introSoundPlayed)
 			{
 				Sound introSfx = LoadSound("resources\\audio\\sounds\\intro.wav");
 				PlaySound(introSfx);
@@ -260,7 +296,7 @@ void States::UpdateStates()
 		// Custom Button Logic is ued for the Exit Button!
 		if (exitBtn.btnAction)
 		{
-			if (Application::enableAudio)
+			if (app.enableAudio)
 			{
 				PlaySound(onExit);
 				SetWindowOpacity(0.0f);
@@ -292,6 +328,12 @@ void States::UpdateStates()
 		returnBtn.Update();
 		returnBtn.HandleSound(hover);
 		returnBtn.HandleClick(click, true, Title, Main, GNULL);
+
+		fsBtn.Update();
+		fsBtn.HandleSound(hover);
+		
+		if (fsBtn.btnAction)
+			ToggleFullscreen();
 
 		break;
 
@@ -340,6 +382,8 @@ void States::UpdateStates()
 				player2.Reset();
 
 				playerWon = false;
+				p1Success = false;
+
 				gameWinner = "";
 				pointWinner = "";
 
@@ -367,7 +411,7 @@ void States::UpdateStates()
 					PlaySound(ballCollision);
 				}
 
-				if (CheckCollisionCircleRec(ball.ballPosition, ball.ballRadius, player2.Paddle))
+				if (CheckCollisionCircleRec(ball.ballPosition, ball.ballRadius, player2.Paddle) && player2.canHitBall)
 				{
 					ball.ballSpeed.x *= -1.1f;
 					ball.ballSpeed.y = (ball.ballPosition.y - player2.Paddle.y) / (player2.Paddle.height / 2) * ball.ballSpeed.x;
@@ -376,13 +420,34 @@ void States::UpdateStates()
 					PlaySound(ballHit);
 				}
 
-				if (CheckCollisionCircleRec(ball.ballPosition, ball.ballRadius, player1.Paddle))
+				if (CheckCollisionCircleRec(ball.ballPosition, ball.ballRadius, player1.Paddle) && player1.canHitBall)
 				{
 					ball.ballSpeed.x *= -1.1f;
 					ball.ballSpeed.y = (ball.ballPosition.y - player1.Paddle.y) / (player1.Paddle.height / 2) * ball.ballSpeed.x;
 
 					ball.ballColor = player1.PaddleColor;
 					PlaySound(ballHit);
+				}
+
+				if (ball.ballPosition.x > GetScreenWidth() + ball.ballRadius)
+				{
+					gameHalted = true;
+					plr1Score += 1;
+
+					if (plr1Score < maxScoreCount)
+					{
+						p1Success = true;
+						pointWinner = "Player 1 Scored a Point!";
+						PlaySound(matchPoint);
+					}
+
+					else
+					{
+						p1Success = true;
+						playerWon = true;
+						gameWinner = "Player 1 Wins!";
+						PlaySound(matchWin);
+					}
 				}
 
 				if (ball.ballPosition.x < 0 - ball.ballRadius)
@@ -403,28 +468,9 @@ void States::UpdateStates()
 						PlaySound(matchWin);
 					}
 				}
-
-				if (ball.ballPosition.x > GetScreenWidth() + ball.ballRadius)
-				{
-					gameHalted = true;
-					plr1Score += 1;
-
-					if (plr1Score < maxScoreCount)
-					{
-						pointWinner = "Player 1 Scored a Point!";
-						PlaySound(matchPoint);
-					}
-
-					else
-					{
-						gameWinner = "Player 1 Wins!";
-						playerWon = true;
-						PlaySound(matchWin);
-					}
-				}
 			}
 
-			else
+			else if (!gamePaused && gameHalted)
 			{
 				if (IsKeyPressed(KEY_ENTER))
 				{
@@ -435,6 +481,7 @@ void States::UpdateStates()
 						player2.Reset();
 
 						gameHalted = false;
+						p1Success = false;
 					}
 
 					else
@@ -444,6 +491,8 @@ void States::UpdateStates()
 						player2.Reset();
 
 						playerWon = false;
+						p1Success = false;
+
 						gameWinner = "";
 						pointWinner = "";
 
@@ -518,7 +567,7 @@ void States::UpdateStates()
 					PlaySound(ballCollision);
 				}
 
-				if (CheckCollisionCircleRec(ball.ballPosition, ball.ballRadius, player1.Paddle))
+				if (CheckCollisionCircleRec(ball.ballPosition, ball.ballRadius, player1.Paddle) && player1.canHitBall)
 				{
 					ball.ballSpeed.x *= -1.1f;
 					ball.ballSpeed.y = (ball.ballPosition.y - player1.Paddle.y) / (player1.Paddle.height / 2) * ball.ballSpeed.x;
@@ -530,8 +579,13 @@ void States::UpdateStates()
 
 				if (CheckCollisionCircleRec(ball.ballPosition, ball.ballRadius, sglPlrPaddle))
 				{
-					ball.ballSpeed.x *= -1.0f;
-					ball.ballSpeed.y = (ball.ballPosition.y - player1.Paddle.y) / (player1.Paddle.height / 2) * ball.ballSpeed.x;
+					if (!player1.canHitBall)
+					{
+						player1.canHitBall = true;
+						ball.ballSpeed.y /= 1.1f;
+					}
+
+					ball.ballSpeed.x *= -1.1f;
 
 					plr1Score += 1;
 					
@@ -541,9 +595,14 @@ void States::UpdateStates()
 
 				if (ball.ballPosition.x > GetScreenWidth() + ball.ballRadius)
 				{
-					PlaySound(matchWin);
+					player1.canHitBall = false;
+					
+					ball.ballPosition.x = 0;
+					ball.ballSpeed.y *= 1.1f;
+
 					plr1Score += 2;
-					ball.Reset();
+
+					PlaySound(matchWin);
 				}
 
 				if (ball.ballPosition.x < 0 - ball.ballRadius)
@@ -590,6 +649,8 @@ void States::UpdateStates()
 
 void States::DrawStates()
 {
+	Application app;
+
 	// Core
 	switch (currentCoreState)
 	{
@@ -635,10 +696,9 @@ void States::DrawStates()
 	}
 
 	// Title
-	const Vector2 pos = { 40, 20 };
+	const char* text = "";
 	const int size = 40;
 	const Color color = WHITE;
-	const char* text = "";
 
 	switch (currentTitleState)
 	{
@@ -659,13 +719,14 @@ void States::DrawStates()
 		break;
 	}
 
-	if (Application::canDebug)
+	if (app.canDebug)
 	{
 		Application app;
 		DrawText(app.buildInfo, 10, GetScreenHeight() - 20, 10, WHITE);
 	}
 
-	DrawText(text, floatToInt(pos.x), floatToInt(pos.y), size, color);
+	int titleWidth = MeasureText(text, size);
+	DrawText(text, floatToInt(GetScreenWidth() / 2 - titleWidth / 2), size, size, color);
 
 	int genericTextScale = 20;
 
@@ -713,11 +774,12 @@ void States::DrawStates()
 		break;
 
 	case TitleState::Options:
-		DrawText("To be introduced.", (GetScreenWidth() / 2) / genericTextScale, 160, genericTextScale, color);
+		fsBtn.DrawOutline();
+		fsBtn.Draw();
 
 		returnBtn.DrawOutline();
-
 		returnBtn.Draw();
+
 		break;
 
 	case TitleState::Credits:
@@ -726,8 +788,8 @@ void States::DrawStates()
 		DrawText("Finalize Date: 18/05/2023 (DEV NOTE: UPDATE THIS WITH THE ACTUAL FINAL DATE!)", (GetScreenWidth() / 2) / genericTextScale, 200, genericTextScale, color);
 
 		returnBtn.DrawOutline();
-
 		returnBtn.Draw();
+
 		break;
 	}
 
@@ -774,7 +836,6 @@ void States::DrawStates()
 			DrawText(p1Score, textPosX - (textSize * 2), textPosY, textSize, player1.PaddleColor);
 			DrawText(p2Score, textPosX + (textSize * 2), textPosY, textSize, player2.PaddleColor);
 			DrawText("|", textPosX, textPosY, textSize, WHITE);
-
 		}
 
 		ball.Draw();
@@ -785,9 +846,15 @@ void States::DrawStates()
 		{
 			if (!playerWon)
 			{
+				Color plrColor = player2.PaddleColor;
+				if (p1Success)
+				{
+					plrColor = player1.PaddleColor;
+				}
+
 				int fontSize = 30;
 				int textWidth = MeasureText(pointWinner, fontSize);
-				DrawText(pointWinner, GetScreenWidth() / 2 - textWidth / 2, GetScreenHeight() / 2 - fontSize, fontSize, ORANGE);
+				DrawText(pointWinner, GetScreenWidth() / 2 - textWidth / 2, GetScreenHeight() / 2 - fontSize, fontSize, plrColor);
 
 				const char* text = "Press 'ENTER' to Continue...";
 				int fontSize2 = fontSize - 10;
@@ -797,9 +864,15 @@ void States::DrawStates()
 
 			else
 			{
+				Color plrColor = player2.PaddleColor;
+				if (p1Success)
+				{
+					plrColor = player1.PaddleColor;
+				}
+
 				int fontSize = 50;
 				int textWidth = MeasureText(gameWinner, fontSize);
-				DrawText(gameWinner, GetScreenWidth() / 2 - textWidth / 2, GetScreenHeight() / 2 - fontSize, fontSize, YELLOW);
+				DrawText(gameWinner, GetScreenWidth() / 2 - textWidth / 2, GetScreenHeight() / 2 - fontSize, fontSize, plrColor);
 
 				const char* text = "Press 'BACKSPACE' to Exit Mode, Press 'ENTER' to do a Rematch!";
 				int fontSize2 = fontSize / 2;
@@ -832,6 +905,11 @@ void States::DrawStates()
 
 			std::string str = std::to_string(plr1Score);
 			char const* p1Score = str.c_str();
+			if (plr1Score > 99)
+			{
+				p1Score = "...how?";
+				ball.Reset();
+			}
 
 			int textSize = 40;
 			int textWidth = MeasureText("000", textSize);
@@ -848,7 +926,7 @@ void States::DrawStates()
 			const char* plrText = "Oh noes! You missed the ball!";
 
 			int textWidth = MeasureText(plrText, fontSize);
-			DrawText(plrText, GetScreenWidth() / 2 - textWidth / 2, GetScreenHeight() / 2 - fontSize, fontSize, YELLOW);
+			DrawText(plrText, GetScreenWidth() / 2 - textWidth / 2, GetScreenHeight() / 2 - fontSize, fontSize, RED);
 
 			const char* text = "Press 'BACKSPACE' to Exit Mode, Press 'ENTER' to Reset Field!";
 			int fontSize2 = fontSize / 2;
