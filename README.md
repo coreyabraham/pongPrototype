@@ -8,20 +8,21 @@ There's not really much else to it honestly.
 ```
 Q = Move Up
 A = Move Down
-Left ALT = Slow Down
+Left ALT = Speed Up
 ```
 
 > Player 2:
 ```
 P = Move Up
 L = Move Down
-Right ALT = Slow Down
+Right ALT = Speed Up
 ```
 
 > Shared:
 ```
-TAB = Pause the current Game Session, Will enable pressing "Backspace" to Exit
-Backspace = Exit to Title Screen (Only works during Match!)
+Tab = Pause the current Game Session, Will enable pressing "Backspace" to Exit
+Backspace = Exit to Title Screen (Only works during Gameplay!)
+Enter = Continue / Rematch (Only works during Gameplay!)
 ```
 
 ## Acknowledgements
