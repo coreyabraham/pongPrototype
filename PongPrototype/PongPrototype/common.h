@@ -1,5 +1,4 @@
 // Header(s) //
-#pragma once
 #include "application.h"
 
 // Function(s) //
@@ -10,7 +9,7 @@ inline int floatToInt(float value)
 
 Color generateCustomColor()
 {
-	int random = GetRandomValue(1, 23);
+	int random = GetRandomValue(1, 22);
 
 	switch (random)
 	{
@@ -249,20 +248,26 @@ public:
 			btnAction = false;
 			btnHovering = false;
 		}
+
+		if (outlineApplicable && btnHovering)
+		{
+			if (outline.x != coreButton.x)
+				outline.x = coreButton.x;
+
+			if (outline.y != coreButton.y)
+				outline.y = coreButton.y;
+		}
 	}
 
 	void Draw()
-	{
-		DrawRectangleRec(coreButton, btnColor);
-		DrawText(btnText, floatToInt(coreButton.x), floatToInt(coreButton.y), floatToInt(coreButton.height - 10), txtColor);
-	}
-
-	void DrawOutline()
 	{
 		if (outlineApplicable && btnHovering)
 		{
 			DrawRectangleRec(outline, highlightColor);
 		}
+
+		DrawRectangleRec(coreButton, btnColor);
+		DrawText(btnText, floatToInt(coreButton.x), floatToInt(coreButton.y), floatToInt(coreButton.height - 10), txtColor);
 	}
 
 	// Other Function(s) //
@@ -310,7 +315,7 @@ private:
 	float PaddleHeight = 100.0f;
 
 	float DefaultPaddleX = 50.0f;
-	float PaddleY = (Application::windowHeight / 2) - PaddleHeight;
+	float PaddleY = (GetScreenHeight() / 2) - PaddleHeight;
 
 	KeyboardKey PaddleUP = KEY_UP;
 	KeyboardKey PaddleDOWN = KEY_DOWN;
@@ -347,7 +352,7 @@ public:
 	Color PaddleColor = WHITE;
 	bool canHitBall = true;
 
-	// Function(s) //
+	// Core Function(s) //
 	void Update()
 	{
 		float deltaTime = GetFrameTime();
@@ -369,14 +374,14 @@ public:
 			Paddle.y -= currentSpeed * deltaTime;
 
 			if (Paddle.y < 0 - Paddle.height)
-				Paddle.y = floatToInt(GetScreenHeight());
+				Paddle.y = GetScreenHeight();
 		}
 
 		if (IsKeyDown(PaddleDOWN))
 		{
 			Paddle.y += currentSpeed * deltaTime;
 
-			if (Paddle.y > floatToInt(GetScreenHeight()))
+			if (Paddle.y > GetScreenHeight())
 				Paddle.y = -Paddle.height;
 		}
 	}
@@ -389,6 +394,41 @@ public:
 	void Reset()
 	{
 		Paddle.y = PaddleY;
+
+		if (!canHitBall)
+		{
+			canHitBall = true;
+		}
+	}
+
+	// Other Function(s) //
+	void DrawDebug(int xPos, int textSize)
+	{	
+		std::string a = std::to_string(Paddle.x);
+		std::string b = std::to_string(Paddle.y);
+		std::string c = std::to_string(Paddle.width);
+		std::string d = std::to_string(Paddle.height);
+
+		std::string e = std::to_string(canHitBall);
+		
+		if (e == std::string("1"))
+			e = std::string("true");
+		else
+			e = std::string("false");
+
+		char const* z = a.c_str();
+		char const* y = b.c_str();
+		char const* x = c.c_str();
+		char const* w = d.c_str();
+		char const* v = e.c_str();
+
+		int startingPoint = floatToInt(GetScreenHeight() / 2 - Paddle.height);
+
+		DrawText(z, xPos, startingPoint, textSize, PaddleColor);
+		DrawText(y, xPos, startingPoint + textSize, textSize, PaddleColor);
+		DrawText(x, xPos, startingPoint + (textSize * 2), textSize, PaddleColor);
+		DrawText(w, xPos, startingPoint + (textSize * 3), textSize, PaddleColor);
+		DrawText(v, xPos, startingPoint + (textSize * 4), textSize, PaddleColor);
 	}
 };
 
@@ -396,7 +436,7 @@ struct Ball
 {
 private:
 	// Default(s) //
-	Vector2 defaultBallPosition = { Application::windowWidth / 2, Application::windowHeight / 2 };
+	Vector2 defaultBallPosition = { (float)GetScreenWidth() / 2, (float)GetScreenHeight() / 2};
 	Vector2 defaultBallSpeed = { 300.0f, 300.0f };
 	Color defaultBallColor = WHITE;
 
@@ -423,7 +463,7 @@ public:
 	float ballRadius = 5.0f;
 	bool ballCollided = false;
 
-	// Function(s) //
+	// Core Function(s) //
 	void Update()
 	{
 		ballPosition.x += ballSpeed.x * GetFrameTime();
@@ -439,9 +479,9 @@ public:
 			ballCollided = true;
 		}
 
-		if (ballPosition.y > floatToInt(GetScreenHeight()))
+		if (ballPosition.y > GetScreenHeight())
 		{
-			ballPosition.y = floatToInt(GetScreenHeight());
+			ballPosition.y = GetScreenHeight();
 			ballSpeed.y *= -1;
 
 			ballCollided = true;
@@ -458,5 +498,38 @@ public:
 		ballPosition = defaultBallPosition;
 		ballSpeed = defaultBallSpeed;
 		ballColor = defaultBallColor;
+	}
+
+	// Other Function(s) //
+	void DrawDebug(int xPos, int textSize)
+	{
+		std::string a = std::to_string(ballPosition.x);
+		std::string b = std::to_string(ballPosition.y);
+		std::string c = std::to_string(ballSpeed.x);
+		std::string d = std::to_string(ballSpeed.y);
+		std::string e = std::to_string(ballRadius);
+		
+		std::string f = std::to_string(ballCollided);
+
+		if (f == std::string("1"))
+			f = std::string("true");
+		else
+			f = std::string("false");
+
+		char const* z = a.c_str();
+		char const* y = b.c_str();
+		char const* x = c.c_str();
+		char const* w = d.c_str();
+		char const* v = e.c_str();
+		char const* u = f.c_str();
+
+		int startingPoint = floatToInt(GetScreenHeight() - (textSize * 6));
+
+		DrawText(z, xPos, startingPoint, textSize, ballColor);
+		DrawText(y, xPos, startingPoint + textSize, textSize, ballColor);
+		DrawText(x, xPos, startingPoint + (textSize * 2), textSize, ballColor);
+		DrawText(w, xPos, startingPoint + (textSize * 3), textSize, ballColor);
+		DrawText(v, xPos, startingPoint + (textSize * 4), textSize, ballColor);
+		DrawText(u, xPos, startingPoint + (textSize * 5), textSize, ballColor);
 	}
 };

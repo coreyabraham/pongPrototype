@@ -1,24 +1,23 @@
 // Header(s) //
-#include "raylib.h"
 #include "states.h"
-
-#include <iostream>
-#include <string>
+#include "application.h"
 
 // Setup //
 States::CoreState currentCoreState = States::CoreState::Intro;
 States::TitleState currentTitleState = States::TitleState::TNULL;
 States::GameState currentGameState = States::GameState::GNULL;
+
 #include "common.h"
+Application globalApp;
 
 // Global Variable(s) //
-int logoPosX = floatToInt(Application::windowWidth / 2 - 128);
-int logoPosY = floatToInt(Application::windowHeight / 2 - 128);
+int logoPosX;
+int logoPosY;
 
 Color logoBorderColor = BLUE;
 Color logoFillColor = SKYBLUE;
 Color logoTextColor = WHITE;
-const char* introText = "Monke";
+const char* introText = "Testy";
 bool introSoundPlayed = false;
 
 int framesCounter = 0;
@@ -32,6 +31,7 @@ int rightSideRecHeight = 16;
 
 int state = 0;
 float alpha = 1.0f;
+bool dependanciesLoaded = false;
 
 bool gameStarted = false;
 bool gamePaused = false;
@@ -50,23 +50,19 @@ const char* gameWinner = "";
 int frameOnStart = 0;
 int hideTextOnFrame = 100;
 
-Player player1 = { 50.0f, KEY_Q, KEY_A, KEY_LEFT_ALT };
-Player player2 = { Application::windowWidth - 75.0f, KEY_P, KEY_L, KEY_RIGHT_ALT };
+Player player1;
+Player player2;
+Rectangle sglPlrPaddle;
+Ball ball;
 
-Ball ball = {  };
-Rectangle sglPlrPaddle = { Application::windowWidth - 75.0f, (Application::windowHeight / 2) - 250.0f, 10.0f, 500.0f };
-
-ClickButton returnBtn = { Vector2{ 20, Application::windowHeight - 90 }, Vector2{ 130, 40 }, "RETURN", RED, WHITE, true, 2.5f };
+ClickButton returnBtn = { Vector2{ 20, 0 }, Vector2{ 130, 40 }, "RETURN", RED, WHITE, true, 2.5f };
 
 ClickButton playBtn = { Vector2{ 20, 200 }, Vector2{ 70, 40 }, "Play", BLACK, WHITE, true, 2.5f };
-ClickButton optsBtn = { Vector2{ 20, 280 }, Vector2{ 120, 40 }, "Options", BLACK, WHITE, true, 2.5f };
-ClickButton cdsBtn = { Vector2{ 20, 360 }, Vector2{ 120, 40 }, "Credits", BLACK, WHITE, true, 2.5f };
-ClickButton exitBtn = { Vector2{ 20, 440 }, Vector2{ 70, 40 }, "Exit", BLACK, WHITE, true, 2.5f };
+ClickButton cdsBtn = { Vector2{ 20, 280 }, Vector2{ 120, 40 }, "Credits", BLACK, WHITE, true, 2.5f };
+ClickButton exitBtn = { Vector2{ 20, 360 }, Vector2{ 70, 40 }, "Exit", BLACK, WHITE, true, 2.5f };
 
 ClickButton genBtn = { Vector2{ 20, 200 }, Vector2{ 210, 40 }, "Generic Mode", BLACK, WHITE, true, 2.5f };
 ClickButton sglBtn = { Vector2{ 20, 280 }, Vector2{ 280, 40 }, "Singleplayer Mode", BLACK, WHITE, true, 2.5f };
-
-ClickButton fsBtn = { Vector2{ 20, 200 }, Vector2{ 285, 40 }, "Toggle Fullscreen", BLACK, WHITE, true, 2.5f };
 
 Sound click;
 Sound back;
@@ -83,6 +79,7 @@ Sound ballCollision;
 Sound ballHit;
 Sound matchPoint;
 Sound matchWin;
+Sound matchLost;
 
 Music titleBGM;
 Music gameBGM;
@@ -91,17 +88,34 @@ Music gameBGM;
 States::States() {  }
 States::~States() {  }
 
+// File-Specific Function(s) //
+void LoadDependancies()
+{
+	if (!dependanciesLoaded)
+	{
+		dependanciesLoaded = true;
+
+		logoPosX = GetScreenWidth() / 2 - 128;
+		logoPosY = GetScreenHeight() / 2 - 128;
+
+		player1 = { 50.0f, KEY_Q, KEY_A, KEY_LEFT_ALT };
+		player2 = { GetScreenWidth() - 75.0f, KEY_P, KEY_L, KEY_RIGHT_ALT};
+
+		player1.PaddleColor = generateCustomColor();
+	 	player2.PaddleColor = generateCustomColor();
+
+		ball = {  };
+		sglPlrPaddle = { GetScreenWidth() -75.0f, (GetScreenHeight() / 2) - 250.0f, 10.0f, 500.0f};
+		returnBtn.coreButton.y = GetScreenHeight() - returnBtn.coreButton.height * 2;
+	}
+}
+
 // Class Function(s) //
 void States::Init()
 {
 	Application app;
-	
 	if (app.enableAudio)
 	{
-
-		player1.PaddleColor = generateCustomColor();
-		player2.PaddleColor = generateCustomColor();
-
 		click = LoadSound("resources\\audio\\sounds\\click.wav");
 		SetSoundVolume(click, app.soundVolume);
 
@@ -141,6 +155,9 @@ void States::Init()
 		matchWin = LoadSound("resources\\audio\\sounds\\matchWin.wav");
 		SetSoundVolume(matchWin, app.soundVolume);
 
+		matchLost = LoadSound("resources\\audio\\sounds\\matchLost.wav");
+		SetSoundVolume(matchLost, app.soundVolume);
+
 		titleBGM = LoadMusicStream("resources\\audio\\music\\titleBGM.mp3");
 		SetMusicVolume(titleBGM, app.musicVolume);
 
@@ -176,7 +193,7 @@ void States::Uninit()
 	}
 }
 
-void States::UpdateStates()
+void States::UpdateStates(float deltaTime)
 {
 	Application app;
 	
@@ -184,6 +201,8 @@ void States::UpdateStates()
 	switch (currentCoreState)
 	{
 	case CoreState::Intro:
+		LoadDependancies();
+
 		switch (state)
 		{
 		case 0:
@@ -268,9 +287,7 @@ void States::UpdateStates()
 			PlayMusicStream(gameBGM);
 
 		if (!gamePaused)
-		{
 			UpdateMusicStream(gameBGM);
-		}
 
 		break;
 	}
@@ -280,24 +297,23 @@ void States::UpdateStates()
 	{
 	case TitleState::Main:
 		playBtn.Update();
-		optsBtn.Update();
 		cdsBtn.Update();
 		exitBtn.Update();
 
 		playBtn.HandleSound(hover);	
-		optsBtn.HandleSound(hover);	
 		cdsBtn.HandleSound(hover);	
 		exitBtn.HandleSound(hover);	
 
 		playBtn.HandleClick(click, true, Title, Modes, GNULL);
-		optsBtn.HandleClick(click, true, Title, Options, GNULL);
 		cdsBtn.HandleClick(click, true, Title, Credits, GNULL);
 
-		// Custom Button Logic is ued for the Exit Button!
 		if (exitBtn.btnAction)
 		{
 			if (app.enableAudio)
 			{
+				if (IsWindowFullscreen())
+					ToggleFullscreen();
+
 				PlaySound(onExit);
 				SetWindowOpacity(0.0f);
 				while (IsSoundPlaying(onExit)) {}
@@ -317,23 +333,9 @@ void States::UpdateStates()
 		sglBtn.HandleSound(hover);
 		returnBtn.HandleSound(hover);
 
-		// Fix having to use "TitleState::None" to fool notation!
-		genBtn.HandleClick(click, true, Game, TNULL, Generic);
-		sglBtn.HandleClick(click, true, Game, TNULL, Solo);
+		genBtn.HandleClick(start, true, Game, TNULL, Generic);
+		sglBtn.HandleClick(start, true, Game, TNULL, Solo);
 		returnBtn.HandleClick(click, true, Title, Main, GNULL);
-
-		break;
-
-	case TitleState::Options:
-		returnBtn.Update();
-		returnBtn.HandleSound(hover);
-		returnBtn.HandleClick(click, true, Title, Main, GNULL);
-
-		fsBtn.Update();
-		fsBtn.HandleSound(hover);
-		
-		if (fsBtn.btnAction)
-			ToggleFullscreen();
 
 		break;
 
@@ -607,7 +609,7 @@ void States::UpdateStates()
 
 				if (ball.ballPosition.x < 0 - ball.ballRadius)
 				{
-					PlaySound(onExit);
+					PlaySound(matchLost);
 					gameHalted = true;
 				}
 			}
@@ -647,10 +649,8 @@ void States::UpdateStates()
 	}
 }
 
-void States::DrawStates()
+void States::DrawStates(bool canDebug)
 {
-	Application app;
-
 	// Core
 	switch (currentCoreState)
 	{
@@ -710,36 +710,20 @@ void States::DrawStates()
 		text = "Pong Prototype | Gamemodes";
 		break;
 
-	case TitleState::Options:
-		text = "Pong Prototype | Options";
-		break;
-
 	case TitleState::Credits:
 		text = "Pong Prototype | Credits";
 		break;
 	}
 
-	if (app.canDebug)
-	{
-		Application app;
-		DrawText(app.buildInfo, 10, GetScreenHeight() - 20, 10, WHITE);
-	}
-
 	int titleWidth = MeasureText(text, size);
-	DrawText(text, floatToInt(GetScreenWidth() / 2 - titleWidth / 2), size, size, color);
+	DrawText(text, GetScreenWidth() / 2 - titleWidth / 2, size, size, color);
 
 	int genericTextScale = 20;
 
 	switch (currentTitleState)
 	{
 	case TitleState::Main:
-		playBtn.DrawOutline();
-		optsBtn.DrawOutline();
-		cdsBtn.DrawOutline();
-		exitBtn.DrawOutline();
-
 		playBtn.Draw();
-		optsBtn.Draw();
 		cdsBtn.Draw();
 		exitBtn.Draw();
 
@@ -764,22 +748,9 @@ void States::DrawStates()
 			color
 		);
 
-		genBtn.DrawOutline();
-		sglBtn.DrawOutline();
-		returnBtn.DrawOutline();
-
 		genBtn.Draw();
 		sglBtn.Draw();
 		returnBtn.Draw();
-		break;
-
-	case TitleState::Options:
-		fsBtn.DrawOutline();
-		fsBtn.Draw();
-
-		returnBtn.DrawOutline();
-		returnBtn.Draw();
-
 		break;
 
 	case TitleState::Credits:
@@ -787,7 +758,6 @@ void States::DrawStates()
 		DrawText("Developed as a prototype for AIE, distrubution requires permission.", (GetScreenWidth() / 2) / genericTextScale, 180, genericTextScale, color);
 		DrawText("Finalize Date: 18/05/2023 (DEV NOTE: UPDATE THIS WITH THE ACTUAL FINAL DATE!)", (GetScreenWidth() / 2) / genericTextScale, 200, genericTextScale, color);
 
-		returnBtn.DrawOutline();
 		returnBtn.Draw();
 
 		break;
@@ -836,6 +806,13 @@ void States::DrawStates()
 			DrawText(p1Score, textPosX - (textSize * 2), textPosY, textSize, player1.PaddleColor);
 			DrawText(p2Score, textPosX + (textSize * 2), textPosY, textSize, player2.PaddleColor);
 			DrawText("|", textPosX, textPosY, textSize, WHITE);
+		}
+
+		if (canDebug)
+		{
+			player1.DrawDebug(10, 20);
+			player2.DrawDebug(GetScreenWidth() - 120, 20);
+			ball.DrawDebug(GetScreenWidth() / 2 - 20, 20);
 		}
 
 		ball.Draw();
@@ -932,6 +909,12 @@ void States::DrawStates()
 			int fontSize2 = fontSize / 2;
 			int textWidth2 = MeasureText(text, fontSize2);
 			DrawText(text, GetScreenWidth() / 2 - textWidth2 / 2, GetScreenHeight() / 2 - fontSize2 + fontSize, fontSize2, WHITE);
+		}
+
+		if (canDebug)
+		{
+			player1.DrawDebug(10, 20);
+			ball.DrawDebug(GetScreenWidth() / 2 - 20, 20);
 		}
 
 		ball.Draw();

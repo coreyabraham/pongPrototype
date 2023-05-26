@@ -49,7 +49,7 @@ void Application::Unload()
 
 void Application::Update(float deltaTime)
 {
-	StateManager.UpdateStates();
+	StateManager.UpdateStates(deltaTime);
 }
 
 void Application::Draw()
@@ -59,10 +59,24 @@ void Application::Draw()
 
 	if (canDebug)
 	{
-		DrawFPS(10, 10);
+		std::string strFPS = std::to_string(GetFPS());
+		std::string strFPS2 = strFPS + " > Frames Per Second";
+
+		char const* framesPerSecond = strFPS2.c_str();
+
+		DrawText(framesPerSecond, 10, 10, 20, GREEN);
+		
+		std::string strFT = std::to_string(GetFrameTime());
+		std::string strFT2 = strFT + " > Delta Time";
+
+		char const* deltaTime = strFT2.c_str();
+		
+		DrawText(deltaTime, 10, 40, 20, BLUE);
+
+		DrawText(buildInfo, 10, GetScreenHeight() - 20, 10, WHITE);
 	}
 
-	StateManager.DrawStates();
+	StateManager.DrawStates(canDebug);
 
 	EndDrawing();
 }

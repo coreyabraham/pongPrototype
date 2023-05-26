@@ -1,7 +1,10 @@
 // Header(s) //
 #pragma once
+
 #include "raylib.h"
+
 #include <iostream>
+#include <string>
 
 // Class(es) //
 class Application
@@ -21,9 +24,6 @@ private:
 
 public:
 	// Configuration //
-	static const int windowWidth = 1280;
-	static const int windowHeight = 720;
-
 	static const int targetFPS = 60;
 	const char* windowTitle = "Pong Prototype";
 	const char* buildInfo = "Build 0.0.1 - Debug";
@@ -33,7 +33,10 @@ public:
 	const float musicVolume = masterVolume / 2.0f;
 
 	// Settings //
-	bool canDebug = true;
-	bool enableAudio = true;
+	int windowWidth = 1280;
+	int windowHeight = 720;
+
+	bool canDebug = false;
 	bool enableFullScreen = false;
+	bool enableAudio = true;
 };
