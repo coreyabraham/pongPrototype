@@ -408,19 +408,21 @@ public:
 		std::string b = std::to_string(Paddle.y);
 		std::string c = std::to_string(Paddle.width);
 		std::string d = std::to_string(Paddle.height);
+		std::string e = std::to_string(currentSpeed);
 
-		std::string e = std::to_string(canHitBall);
+		std::string f = std::to_string(canHitBall);
 		
-		if (e == std::string("1"))
-			e = std::string("true");
+		if (f == std::string("1"))
+			f = std::string("true");
 		else
-			e = std::string("false");
+			f = std::string("false");
 
 		char const* z = a.c_str();
 		char const* y = b.c_str();
 		char const* x = c.c_str();
 		char const* w = d.c_str();
 		char const* v = e.c_str();
+		char const* u = f.c_str();
 
 		int startingPoint = floatToInt(GetScreenHeight() / 2 - Paddle.height);
 
@@ -429,6 +431,7 @@ public:
 		DrawText(x, xPos, startingPoint + (textSize * 2), textSize, PaddleColor);
 		DrawText(w, xPos, startingPoint + (textSize * 3), textSize, PaddleColor);
 		DrawText(v, xPos, startingPoint + (textSize * 4), textSize, PaddleColor);
+		DrawText(u, xPos, startingPoint + (textSize * 5), textSize, PaddleColor);
 	}
 };
 

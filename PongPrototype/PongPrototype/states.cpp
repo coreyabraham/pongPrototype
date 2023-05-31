@@ -64,13 +64,13 @@ ClickButton exitBtn = { Vector2{ 20, 360 }, Vector2{ 70, 40 }, "Exit", BLACK, WH
 ClickButton genBtn = { Vector2{ 20, 200 }, Vector2{ 210, 40 }, "Generic Mode", BLACK, WHITE, true, 2.5f };
 ClickButton sglBtn = { Vector2{ 20, 280 }, Vector2{ 280, 40 }, "Singleplayer Mode", BLACK, WHITE, true, 2.5f };
 
+Sound intro;
+
 Sound click;
 Sound back;
 Sound hover;
 Sound start;
 Sound begin;
-Sound error;
-Sound onExit;
 
 Sound paused;
 Sound unpaused;
@@ -105,7 +105,10 @@ void LoadDependancies()
 	 	player2.PaddleColor = generateCustomColor();
 
 		ball = {  };
-		sglPlrPaddle = { GetScreenWidth() -75.0f, (GetScreenHeight() / 2) - 250.0f, 10.0f, 500.0f};
+
+		float offset = 250.0f;
+		float height = GetScreenHeight() - offset;
+		sglPlrPaddle = { GetScreenWidth() -75.0f, GetScreenHeight() / height + offset, 10.0f, height};
 		returnBtn.coreButton.y = GetScreenHeight() - returnBtn.coreButton.height * 2;
 	}
 }
@@ -116,48 +119,49 @@ void States::Init()
 	Application app;
 	if (app.enableAudio)
 	{
-		click = LoadSound("resources\\audio\\sounds\\click.wav");
-		SetSoundVolume(click, app.soundVolume);
+		// Miscellaneous Sounds
+		intro = LoadSound("resources\\audio\\sounds\\miscellaneous\\intro.wav");
+		SetSoundVolume(intro, app.soundVolume);
 
-		back = LoadSound("resources\\audio\\sounds\\back.wav");
+		// Menu Sounds
+		back = LoadSound("resources\\audio\\sounds\\menu\\back.wav");
 		SetSoundVolume(back, app.soundVolume);
 
-		hover = LoadSound("resources\\audio\\sounds\\hover.wav");
+		click = LoadSound("resources\\audio\\sounds\\menu\\click.wav");
+		SetSoundVolume(click, app.soundVolume);
+
+		hover = LoadSound("resources\\audio\\sounds\\menu\\hover.wav");
 		SetSoundVolume(hover, app.soundVolume);
 
-		start = LoadSound("resources\\audio\\sounds\\start.wav");
+		start = LoadSound("resources\\audio\\sounds\\menu\\start.wav");
 		SetSoundVolume(start, app.soundVolume);
 
-		begin = LoadSound("resources\\audio\\sounds\\begin.wav");
-		SetSoundVolume(begin, app.soundVolume);
-
-		error = LoadSound("resources\\audio\\sounds\\error.wav");
-		SetSoundVolume(error, app.soundVolume);
-
-		onExit = LoadSound("resources\\audio\\sounds\\exit.wav");
-		SetSoundVolume(onExit, app.soundVolume);
-
-		paused = LoadSound("resources\\audio\\sounds\\gamePause.wav");
-		SetSoundVolume(paused, app.soundVolume);
-
-		unpaused = LoadSound("resources\\audio\\sounds\\gameUnpause.wav");
-		SetSoundVolume(unpaused, app.soundVolume);
-
-		ballCollision = LoadSound("resources\\audio\\sounds\\ballCollision.wav");
+		// Gameplay Sounds
+		ballCollision = LoadSound("resources\\audio\\sounds\\gameplay\\ballCollision.wav");
 		SetSoundVolume(ballCollision, app.soundVolume);
 
-		ballHit = LoadSound("resources\\audio\\sounds\\ballHit.wav");
+		ballHit = LoadSound("resources\\audio\\sounds\\gameplay\\ballHit.wav");
 		SetSoundVolume(ballHit, app.soundVolume);
 
-		matchPoint = LoadSound("resources\\audio\\sounds\\matchPoint.wav");
-		SetSoundVolume(matchPoint, app.soundVolume);
+		begin = LoadSound("resources\\audio\\sounds\\gameplay\\begin.wav");
+		SetSoundVolume(begin, app.soundVolume);
 
-		matchWin = LoadSound("resources\\audio\\sounds\\matchWin.wav");
-		SetSoundVolume(matchWin, app.soundVolume);
+		paused = LoadSound("resources\\audio\\sounds\\gameplay\\gamePause.wav");
+		SetSoundVolume(paused, app.soundVolume);
 
-		matchLost = LoadSound("resources\\audio\\sounds\\matchLost.wav");
+		unpaused = LoadSound("resources\\audio\\sounds\\gameplay\\gameUnpause.wav");
+		SetSoundVolume(unpaused, app.soundVolume);
+
+		matchLost = LoadSound("resources\\audio\\sounds\\gameplay\\matchLost.wav");
 		SetSoundVolume(matchLost, app.soundVolume);
 
+		matchPoint = LoadSound("resources\\audio\\sounds\\gameplay\\matchPoint.wav");
+		SetSoundVolume(matchPoint, app.soundVolume);
+
+		matchWin = LoadSound("resources\\audio\\sounds\\gameplay\\matchWin.wav");
+		SetSoundVolume(matchWin, app.soundVolume);
+
+		// Music
 		titleBGM = LoadMusicStream("resources\\audio\\music\\titleBGM.mp3");
 		SetMusicVolume(titleBGM, app.musicVolume);
 
@@ -172,13 +176,13 @@ void States::Uninit()
 
 	if (app.enableAudio)
 	{
+		UnloadSound(intro);
+
 		UnloadSound(click);
 		UnloadSound(back);
 		UnloadSound(hover);
 		UnloadSound(start);
 		UnloadSound(begin);
-		UnloadSound(error);
-		UnloadSound(onExit);
 
 		UnloadSound(paused);
 		UnloadSound(unpaused);
@@ -217,14 +221,6 @@ void States::UpdateStates(float deltaTime)
 			break;
 
 		case 1:
-
-			if (app.enableAudio && !introSoundPlayed)
-			{
-				Sound introSfx = LoadSound("resources\\audio\\sounds\\intro.wav");
-				PlaySound(introSfx);
-				introSoundPlayed = true;
-			}
-
 			topSideRecWidth += 4;
 			leftSideRecHeight += 4;
 
@@ -240,13 +236,17 @@ void States::UpdateStates(float deltaTime)
 			rightSideRecHeight += 4;
 
 			if (bottomSideRecWidth == 256)
-			{
 				state = 3;
-			}
 
 			break;
 
 		case 3:
+			if (app.enableAudio && !introSoundPlayed)
+			{
+				PlaySound(intro);
+				introSoundPlayed = true;
+			}
+
 			framesCounter++;
 
 			if (framesCounter / 12)
@@ -309,16 +309,7 @@ void States::UpdateStates(float deltaTime)
 
 		if (exitBtn.btnAction)
 		{
-			if (app.enableAudio)
-			{
-				if (IsWindowFullscreen())
-					ToggleFullscreen();
-
-				PlaySound(onExit);
-				SetWindowOpacity(0.0f);
-				while (IsSoundPlaying(onExit)) {}
-			}
-
+			Uninit();
 			CloseWindow();
 		}
 
@@ -396,7 +387,7 @@ void States::UpdateStates(float deltaTime)
 				gamePaused = false;
 				gameHalted = false;
 
-				PlaySound(error);
+				PlaySound(back);
 				currentCoreState = CoreState::Title;
 				currentTitleState = TitleState::Modes;
 				currentGameState = GameState::GNULL;
@@ -524,7 +515,7 @@ void States::UpdateStates(float deltaTime)
 					gamePaused = false;
 					gameHalted = false;
 
-					PlaySound(error);
+					PlaySound(back);
 					currentCoreState = CoreState::Title;
 					currentTitleState = TitleState::Modes;
 					currentGameState = GameState::GNULL;
@@ -553,7 +544,7 @@ void States::UpdateStates(float deltaTime)
 				gameHalted = false;
 				gamePaused = false;
 
-				PlaySound(error);
+				PlaySound(back);
 				currentCoreState = CoreState::Title;
 				currentTitleState = TitleState::Modes;
 				currentGameState = GameState::GNULL;
@@ -587,7 +578,8 @@ void States::UpdateStates(float deltaTime)
 						ball.ballSpeed.y /= 1.1f;
 					}
 
-					ball.ballSpeed.x *= -1.1f;
+					ball.ballSpeed.x *= -1.025f;
+					ball.ballColor = WHITE;
 
 					plr1Score += 1;
 					
@@ -637,7 +629,7 @@ void States::UpdateStates(float deltaTime)
 					gameHalted = false;
 					gamePaused = false;
 
-					PlaySound(error);
+					PlaySound(back);
 					currentCoreState = CoreState::Title;
 					currentTitleState = TitleState::Modes;
 					currentGameState = GameState::GNULL;
@@ -755,8 +747,17 @@ void States::DrawStates(bool canDebug)
 
 	case TitleState::Credits:
 		DrawText("Prototype Developed by Corey Abraham.", (GetScreenWidth() / 2) / genericTextScale, 160, genericTextScale, color);
-		DrawText("Developed as a prototype for AIE, distrubution requires permission.", (GetScreenWidth() / 2) / genericTextScale, 180, genericTextScale, color);
-		DrawText("Finalize Date: 18/05/2023 (DEV NOTE: UPDATE THIS WITH THE ACTUAL FINAL DATE!)", (GetScreenWidth() / 2) / genericTextScale, 200, genericTextScale, color);
+		DrawText("Developed as a prototype for AIE submission, distrubution may require permission from said institute.", (GetScreenWidth() / 2) / genericTextScale, 180, genericTextScale, color);
+		
+		DrawText("All Audio contained within this project's 'resource' directory is used via free licensing,", (GetScreenWidth() / 2) / genericTextScale, 220, genericTextScale, color);
+		DrawText("read the 'AudioCopyright.txt' file for more information.", (GetScreenWidth() / 2) / genericTextScale, 240, genericTextScale, color);
+
+		std::string header = "VERSION: ";
+		std::string fullStr = header + globalApp.buildInfo;
+		char const* build = fullStr.c_str();
+
+		DrawText("Finalize Date: 31/05/2023", (GetScreenWidth() / 2) / genericTextScale, 280, genericTextScale, color);
+		DrawText(build, (GetScreenWidth() / 2) / genericTextScale, 300, genericTextScale, color);
 
 		returnBtn.Draw();
 
@@ -882,11 +883,6 @@ void States::DrawStates(bool canDebug)
 
 			std::string str = std::to_string(plr1Score);
 			char const* p1Score = str.c_str();
-			if (plr1Score > 99)
-			{
-				p1Score = "...how?";
-				ball.Reset();
-			}
 
 			int textSize = 40;
 			int textWidth = MeasureText("000", textSize);

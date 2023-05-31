@@ -26,11 +26,11 @@ public:
 	// Configuration //
 	static const int targetFPS = 60;
 	const char* windowTitle = "Pong Prototype";
-	const char* buildInfo = "Build 0.0.1 - Debug";
+	const char* buildInfo = "Build 1.0";
 
 	const float masterVolume = 0.5f;
 	const float soundVolume = masterVolume;
-	const float musicVolume = masterVolume / 2.0f;
+	const float musicVolume = masterVolume / 3.0f;
 
 	// Settings //
 	int windowWidth = 1280;
