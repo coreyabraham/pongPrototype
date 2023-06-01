@@ -2,7 +2,7 @@
 
 A simple Pong prototype created with Raylib C / C++ for a university project.
 
-# Keybindings
+## Keybindings
 
 > Player 1:
 ```
