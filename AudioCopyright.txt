@@ -1,0 +1,28 @@
+The following Copyright information has been listed in order to facilitate proper usage of audio, whether that be Music or Sound usage throughout this demo, as all audio listed below is under free licencing that grants the usage of said audio so long as either:
+1)	No profit is gained with the usage of said audio.
+2)	Credit is provided or appreciated.
+
+| Music Credits:
+(All Background Music is provided by "Loyalty Freak Music" | https://loyaltyfreakmusic.com/) 
+> "titleBGM.mp3" = Loyalty Freak Music - You know why
+> "gameBGM.mp3" = Loyalty Freak Music - Everyone
+
+| Sound Credits:
+// Miscellaneous
+> "intro.wav" = UNIVERSFIELD | https://freesound.org/people/UNIVERSFIELD/sounds/686804/
+
+// Title Screen Menu
+> "back.wav" = KieranKeegan | https://freesound.org/people/KieranKeegan/sounds/418231/ 
+> "click.wav" = Rob_Marion | https://freesound.org/people/Rob_Marion/sounds/541987/ 
+> "hover.wav" = Lost_Dream | https://freesound.org/people/Lost_Dream/sounds/435997/ 
+> "start.wav" = JustInvoke | https://freesound.org/people/JustInvoke/sounds/446114/ 
+
+// Gameplay
+> "ballCollision.wav" = NoiseCollector | https://freesound.org/people/NoiseCollector/sounds/4389/ 
+> "ballHit.wav" = NoiseCollector | https://freesound.org/people/NoiseCollector/sounds/4391/ 
+> "begin.wav" = irinairinafomicheva | https://pixabay.com/sound-effects/start-13691/ 
+> "gamePause.wav" = crisstanza | https://freesound.org/people/crisstanza/sounds/167127/ 
+> "gameUnpause.wav" = crisstanza | https://freesound.org/people/crisstanza/sounds/167126/ 
+> "matchLost.wav" = Kastenfrosch | https://freesound.org/people/Kastenfrosch/sounds/162465/ 
+> "matchPoint.wav" = MLaudio | https://freesound.org/people/MLaudio/sounds/615100/ 
+> "matchWin.wav" = MLaudio | https://freesound.org/people/MLaudio/sounds/615099/ 

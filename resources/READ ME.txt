@@ -1,0 +1,2 @@
+Make sure this "resources" directory is in the same directory as the compiled executable for it to be read correctly via the Prototype!
+If you do not hear any audio and if you see "Failed to load audio" errors within the executable's console window, then that's most likely the cause!

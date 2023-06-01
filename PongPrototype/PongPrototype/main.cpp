@@ -1,59 +1,64 @@
 // Header(s) //
 #include "application.h"
 
-using namespace std;
-
 // Function(s) //
 int main(int argc, char* argv[])
 {
 	Application app;
 
 	bool runGame = true;
+	bool attemptFullscreen = false;
 	bool clearOutputAfterGame = false;
 
 	if (argc > 1)
 	{
 		for (int i = 1; i < argc; ++i)
 		{
-			//std::cout << argv[i] << " | " << i << std::endl;
-
 			// Console Arguments //
-			if (argv[i] == string("version"))
+			if (argv[i] == std::string("version"))
 			{
-				cout << "Version: " << app.buildInfo << endl;
+				std::cout << "Build Version: " << app.buildInfo << std::endl;
 				runGame = false;
 			}
 
-			if (argv[i] == string("preclear"))
-				system("cls");
-
-			if (argv[i] == string("postclear"))
+			if (argv[i] == std::string("postclear"))
 				clearOutputAfterGame = true;
 
+			if (argv[i] == std::string("preclear"))
+				system("cls");
+
 			// Raylib and or Project Arguments //
-			if (argv[i] == string("enabledebug"))
+			if (argv[i] == std::string("enabledebug"))
 				app.canDebug = true;
 
-			if (argv[i] == string("disableaudio"))
+			if (argv[i] == std::string("disableaudio"))
 				app.enableAudio = false;
 
-			if (argv[i] == string("fullscreen"))
-			{
-				int monitor = GetCurrentMonitor();
-				int moniX = GetMonitorWidth(monitor);
-				int moniY = GetMonitorHeight(monitor);
-
-				app.windowWidth = moniX;
-				app.windowHeight = moniY;
-				
-				app.enableFullScreen = true;
-			}
+			if (argv[i] == std::string("fullscreen"))
+				attemptFullscreen = true;
 		}
 	}
 
 	if (runGame)
+	{
+		if (attemptFullscreen)
+		{
+			int monitor = GetCurrentMonitor();
+			int moniX = GetMonitorWidth(monitor);
+			int moniY = GetMonitorHeight(monitor);
+
+			if (app.windowWidth != moniX)
+				app.windowWidth = moniX;
+
+			if (app.windowHeight != moniY)
+				app.windowHeight = moniY;
+
+			app.enableFullScreen = true;
+		}
+
 		app.Run();
 
-	if (clearOutputAfterGame)
-		system("cls");
+		if (clearOutputAfterGame)
+			system("cls");
+	}
 }

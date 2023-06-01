@@ -64,6 +64,7 @@ ClickButton exitBtn = { Vector2{ 20, 360 }, Vector2{ 70, 40 }, "Exit", BLACK, WH
 ClickButton genBtn = { Vector2{ 20, 200 }, Vector2{ 210, 40 }, "Generic Mode", BLACK, WHITE, true, 2.5f };
 ClickButton sglBtn = { Vector2{ 20, 280 }, Vector2{ 280, 40 }, "Singleplayer Mode", BLACK, WHITE, true, 2.5f };
 
+// Assignable Definition(s) //
 Sound intro;
 
 Sound click;
@@ -106,9 +107,8 @@ void LoadDependancies()
 
 		ball = {  };
 
-		float offset = 250.0f;
-		float height = GetScreenHeight() - offset;
-		sglPlrPaddle = { GetScreenWidth() -75.0f, GetScreenHeight() / height + offset, 10.0f, height};
+		float height = GetScreenHeight() - 250.0f;
+		sglPlrPaddle = { GetScreenWidth() - 75.0f, GetScreenHeight() / 2 - (height / 2), 10.0f, height };
 		returnBtn.coreButton.y = GetScreenHeight() - returnBtn.coreButton.height * 2;
 	}
 }
@@ -556,13 +556,11 @@ void States::UpdateStates(float deltaTime)
 				player1.Update();
 
 				if (ball.ballCollided)
-				{
 					PlaySound(ballCollision);
-				}
 
 				if (CheckCollisionCircleRec(ball.ballPosition, ball.ballRadius, player1.Paddle) && player1.canHitBall)
 				{
-					ball.ballSpeed.x *= -1.1f;
+					ball.ballSpeed.x *= -1.05f;
 					ball.ballSpeed.y = (ball.ballPosition.y - player1.Paddle.y) / (player1.Paddle.height / 2) * ball.ballSpeed.x;
 
 					ball.ballColor = player1.PaddleColor;
@@ -575,7 +573,6 @@ void States::UpdateStates(float deltaTime)
 					if (!player1.canHitBall)
 					{
 						player1.canHitBall = true;
-						ball.ballSpeed.y /= 1.1f;
 					}
 
 					ball.ballSpeed.x *= -1.025f;
@@ -592,7 +589,7 @@ void States::UpdateStates(float deltaTime)
 					player1.canHitBall = false;
 					
 					ball.ballPosition.x = 0;
-					ball.ballSpeed.y *= 1.1f;
+					ball.ballSpeed.y *= 1.05f;
 
 					plr1Score += 2;
 
